@@ -1,22 +1,30 @@
 
 -- Question 1
--- You have a list of names defined below. If you use the sort function on the list
--- the elements are sorted by their first name. The function uses the compare function
--- from the Ord type class. Try to implement the Ord type class for the FullName type 
--- such that sort function will sort the elements regarding to their last name.
+-- Check out some of the functions that are defined in the type classes stated in the
+-- section "Other important type classes" from lesson 7. What do they do?
 
-import Data.List (sort)
-newtype FullName = Name (String, String) deriving (Show, Eq)
+-- For the Show type class the show function can represent objects as strings
+-- show :: Show a => a -> String
 
-unsortedNames :: [FullName]
-unsortedNames = [Name ("Mark","Knopfler"),Name ("Jimmy","Page"),Name ("Brian","May")]
+-- For the Read type class the read function can represent strings as numbers
+-- read :: Read a => String -> a
 
--- sort unsortedNames -- without implementing the Ord type class for FullName type
--- [("Brian","May"),("Jimmy","Page"),("Mark","Knopfler")]
+-- For the Enum type class the toEnum and fromEnum functions can convert user defined
+-- data types that implement Enum from an Int and to an Int.
+-- toEnum :: Enum a => Int -> a
+-- fromEnum :: Enum a => a -> Int
 
-instance Ord FullName where
-  compare (Name (first1, last1)) (Name (first2, last2)) = compare last1 last2
+-- For the Bounded type class the parameters maxBound and minBound give the highest
+-- and smallest possible value of a certain type.
+-- maxBound :: Int -- returns 9223372036854775807
 
+-- For the foldable type class the function foldl, foldr, minimum, maximum, lenght
+-- and sum are very useful. The last 4 are very intuitive.
+
+-- foldl (-) 1 [2..4]
+-- returns: 1 - 2 - 3 - 4 = -8
+-- foldr (-) 1 [2..4]
+-- returns: 2 - (3 - (4 - 1)) = 2
 
 -- Question 2
 -- The types Int and Word bellong to the same type classes. What is the difference
@@ -30,17 +38,17 @@ instance Ord FullName where
 -- The Word type has a 2 times higher maxBound and 0 for minBound which makes it as
 -- a usigned Int type. 
 
-
 -- Question 3
--- The Enum type class has the function toEnum and fromEnum that let you convert
--- user defined types into Int and vice versa. For the type MyGrades below we
--- derive Enum. Implement for this type the Eq and Ord type classes by using one
--- of the Enum functions.
+-- Add type signatures to the functions below and use type variables. Then uncomment 
+-- the functions and try to compile.
 
-data MyGrades = A | B | C deriving Enum
+f1 :: (Show a, Fractional a) => a -> a -> [Char] -> [Char]
+f1 x y z = show (x/y) ++ z
 
-instance Eq MyGrades where
- (==) grade1 grade2 = fromEnum grade1 == fromEnum grade2
+f2 :: (Fractional b, Read b, Enum b) => String -> b -> b -> b
+f2 x y z = foldl (/) (read x) [y..z]
 
-instance Ord MyGrades where
- compare grade1 grade2 = compare (fromEnum grade1) (fromEnum grade2)
+f3 :: (Bounded a, Enum a, Eq a) => a -> a
+f3 x = if x == maxBound
+          then minBound
+          else succ x
