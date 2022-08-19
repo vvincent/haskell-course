@@ -6,7 +6,6 @@
 -- such that sort function will sort the elements regarding to their last name.
 
 import Data.List (sort)
-import PrelNames (mkThisGhcModule, wordTyConKey)
 newtype FullName = Name (String, String) deriving (Show, Eq)
 
 unsortedNames :: [FullName]
