@@ -175,9 +175,12 @@ Everything else can be safely ignored
 - Read/Write to console
 - Read/Write to file
 
-### 11. Complete project using IO
+### 11. Bits and bytes
 
-- #To define
+- Grouping bits and bytes
+- Haskell and bytes
+- Lazy and strict byte strings
+- Example
 
 ### 12. Pragmas, Modules, and Cabal
 
