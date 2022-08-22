@@ -1,7 +1,11 @@
 
+-- This statement is a language pragma about which you will learn in lesson 12. We use it
+-- here so we can have same function names in record syntax definitions of different types.
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE OverloadedStrings #-}
 
+-- This language extension and import statement are used for handling ByteStrings about
+-- which you will learn in lesson 11
+{-# LANGUAGE OverloadedStrings #-}
 import Data.ByteString (ByteString)
 
 -- Question 1
