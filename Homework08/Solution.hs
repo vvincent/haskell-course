@@ -2,6 +2,8 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+import Data.ByteString (ByteString)
+
 -- Question 1
 -- Algebraic data types are types combined of other types. You have 2 choices for combining.
 -- The first one is called product types where you combine types with a logical "and":
@@ -15,8 +17,6 @@
 -- Solve the problem in 2 ways. First use only product types where you extract the common
 -- parameters and define a new type that you then use for constructing both types. Second
 -- use sum types to define the base common type. Try to solve the sum type in various ways.
-
-import Data.ByteString (ByteString)
 
 data Guitar = Guitar { brand :: String
                      , price :: Float
