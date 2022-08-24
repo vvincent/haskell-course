@@ -1,69 +1,54 @@
 
--- This statement is a language pragma about which you will learn in lesson 12. We use it
--- here so we can have same function names in record syntax definitions of different types.
-{-# LANGUAGE DuplicateRecordFields #-}
-
--- This language extension and import statement are used for handling ByteStrings about
--- which you will learn in lesson 11
-{-# LANGUAGE OverloadedStrings #-}
-import Data.ByteString (ByteString)
-
 -- Question 1
--- Algebraic data types are types combined of other types. You have 2 choices for combining.
--- The first one is called product types where you combine types with a logical "and":
--- type Address = String
--- type Number = Int
--- data productType = Address Number
--- The second one is called sum types where you combine types with a logical "or":
--- type sumType = Descriptive Address | Numeric Number
+-- Check out some of the functions that are defined in the type classes stated in the
+-- section "Other important type classes" from lesson 7. What do they do?
 
--- Below you have a data type defined and you want to add another data type to your code.
--- Solve the problem in 2 ways. First use only product types where you extract the common
--- parameters and define a new type that you then use for constructing both types. Second
--- use sum types to define the base common type. Try to solve the sum type in various ways.
+-- For the Show type class the show function can represent objects as strings
+-- show :: Show a => a -> String
 
-data Guitar = Guitar { brand :: String
-                     , price :: Float
-                     , color :: String }
+-- For the Read type class the read function can represent strings as numbers
+-- read :: Read a => String -> a
 
-data Drums = Drums { brand :: String
-                   , price :: Float
-                   , drumCount :: Int }
+-- For the Enum type class the toEnum and fromEnum functions can convert user defined
+-- data types that implement Enum from an Int and to an Int.
+-- toEnum :: Enum a => Int -> a
+-- fromEnum :: Enum a => a -> Int
 
--- First solution
-data InstrumentData = InsData { brand :: String
-                              , price :: Float }
+-- For the Bounded type class the parameters maxBound and minBound give the highest
+-- and smallest possible value of a certain type.
+-- maxBound :: Int -- returns 9223372036854775807
 
-type GuitarColor = String
-data Guitar1 = Guitar1 InstrumentData GuitarColor
+-- For the foldable type class the function foldl, foldr, minimum, maximum, lenght
+-- and sum are very useful. The last 4 are very intuitive.
 
-type DrumsCount = Int
-data Drums1 = Drums1 InstrumentData DrumsCount
-
--- Second solution
-data Instrument1 = Guitar2 InstrumentData GuitarColor | Drums2 InstrumentData DrumsCount
--- or
-data Instrument2 = Guitar3 { brand :: String
-                           , price :: Float
-                           , color :: String }
-                 | Drums3 { brand :: String
-                          , price :: Float
-                          , drumCount :: Int }
--- or
-data AdditionalData = Color String | Price Int
-data Instrument3 = Instrument3 InstrumentData AdditionalData
+-- foldl (-) 1 [2..4]
+-- returns: 1 - 2 - 3 - 4 = -8
+-- foldr (-) 1 [2..4]
+-- returns: 2 - (3 - (4 - 1)) = 2
 
 -- Question 2
--- Try to implement a data type that in its definition is refering to itself and make an
--- instace of it. And example of this is the linked list that you have saw in the lesson. 
--- Here is another way to define it: data List a = Empty | Cons a (List a) deriving Show 
+-- The types Int and Word bellong to the same type classes. What is the difference
+-- between them? Check maybe the maxBound and minBound parameter for both types.
 
--- We will show here the Plutus data type called Data that has the following definition:
-data Data = Constr Integer [Data]
-          | Map [(Data, Data)]
-          | List [Data]
-          | I Integer
-          | B ByteString
+-- maxBound :: Int -- returns 9223372036854775807
+-- maxBound :: Word -- returns 18446744073709551615
+-- minBound :: Int -- returns -9223372036854775808
+-- minBound :: Word -- returns 0
 
-myData :: Data
-myData = Map [(I 1, B "one"), (I 2, B "two"), (I 3, B "three")]
+-- The Word type has a 2 times higher maxBound and 0 for minBound which makes it as
+-- a usigned Int type. 
+
+-- Question 3
+-- Add type signatures to the functions below and use type variables. Then uncomment 
+-- the functions and try to compile.
+
+f1 :: (Show a, Fractional a) => a -> a -> [Char] -> [Char]
+f1 x y z = show (x/y) ++ z
+
+f2 :: (Fractional b, Read b, Enum b) => String -> b -> b -> b
+f2 x y z = foldl (/) (read x) [y..z]
+
+f3 :: (Bounded a, Enum a, Eq a) => a -> a
+f3 x = if x == maxBound
+          then minBound
+          else succ x

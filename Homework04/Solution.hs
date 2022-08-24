@@ -1,36 +1,41 @@
 
 -- Question 1
--- For the expressions below try to gues what the result is for y=5 before you run any of
--- the functions. The rule for variable lookup and its priority is called lexical scope.
+-- Rewrite the function from the lesson 3A such that you use guards and case-of statements
 
-x = 2 :: Int
-
-mult1, mult2, mult3 :: Int -> Int
-mult1 y = x * y
-mult2 y = (\x -> x * y) 3
-mult3 y = (\y -> (\x -> x * y) 4) 3
+guardsAndCaseOf :: Double -> Double -> String
+guardsAndCaseOf a b
+  | a > b = case a of
+                0 -> "a is larger but 0"
+                _ -> show (a/b)
+  | a < b = case b of
+                0 -> "b is larger but 0"
+                _ -> show (b/a)
+  | otherwise = case a of
+                0 -> "a and b are both 0"
+                _ -> "1"
 
 -- Question 2
--- Write a function that takes in a positive number n1 and creates a list from 1 .. n1.
--- Then calulate the number n2 = 1/2/.../n1 * 10**n1 and create another list from 1 .. n2,
--- where you can round of n1 and n2 when you create the first and second list. Sum the 
--- elements of each list and calculate the difference between sum 2 and sum 1. For which 
--- number n1 does the difference jump from a positive to a negative result? 
+-- Lets say you have the variable nested defined bellow. How would you get the value of
+-- 4 by using only pattern matching in a function?
 
--- Use only 2 helper functions and function composition. Do not use any let-in and where
--- blocks. You are allowed only to use the built-in functions: head, tail, last, init and 
--- sum. They all operate on lists of numbers. Try them out to see how they work. You can
--- also help yourself with pattern matching and recursion.
+nested :: [([Int], [Int])]
+nested = [([1,2],[3,4]), ([5,6],[7,8])]
 
-f1 :: Double -> [Double]
-f1 x = [1..x] ++ [1]
+three :: [([Int], [Int])] -> Int
+three [([a,b],[c,d]), _] = d
+three _ = 0
 
-f2 :: [Double] -> Double
-f2 [] = 0
-f2 [x] = x
-f2 [x,y] = x / y * 10
-f2 [x,y,z] = x / y * z
-f2 (x:xs) = f2 $ [x / head xs] ++ init (tail xs) ++ [last xs * 10]
+-- Question 3
+-- Write a function that takes in a list of integers and returns the number that comes
+-- after the first occurence of 1. If there is no 1 in the list return a 0. Use pattern
+-- matching and recursive calls for your function. 
 
-difference :: Double -> Double
-difference x = (sum . init . f1 . f2 . f1) x - (sum . init . f1) x
+myList :: [Int]
+myList = [3,9,5,8,2,1,7,3,9,2] -- your function should return 7 for this list
+
+after1 :: [Int] -> Int
+after1 [] = 0
+after1 [x] = 0
+after1 (x:xs) = if x == 1 
+                then head xs
+                else after1 xs

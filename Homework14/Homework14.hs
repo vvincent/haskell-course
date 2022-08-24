@@ -1,9 +1,19 @@
 
--- Write a program that reads the file Data.txt and checks following properties:
--- the name parameter contains at least two words 
--- the email parameter contains an @ sign and the domain name contains a dot
--- the password parameter is at least six characters long and contains at least one number and a non-number character
+-- Question 1
+-- Look up the functions and types that are stated in the import statements below. Write a 
+-- function that takes in an integer n and creates an Array with indexes from 1 to n and
+-- values that are the factorial of the index. Then create another function that takes in 
+-- an array produced by the first function and returns a UArray where the values have a
+-- reversed order in comparison to the input array. Use the Data.Array.ST module that 
+-- enables you to work with stateful arrays. 
 
--- If any of the checks do not pass return an appropriate error message.
--- Use the concept of Railway oriented programming as shown in the lesson.
--- HINT: The library split is added to the cabal file as dependency. 
+import Data.Array.Unboxed (UArray)
+import Data.Array (Array, bounds, array, (!))
+import Data.Array.ST (writeArray, MArray(newArray), runSTUArray)
+import Control.Monad (forM_)
+
+-- Since we did not covered monads here is an example how the forM_ function can be used:
+printN :: Int -> IO ()
+printN n = do
+  forM_ [1..n] $ \ind -> do
+    print ind
