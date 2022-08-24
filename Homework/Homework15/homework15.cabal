@@ -1,5 +1,5 @@
 cabal-version:      2.4
-name:               homework14
+name:               homework15
 version:            0.1.0.0
 synopsis:
 homepage:
@@ -8,7 +8,7 @@ license-file:       LICENSE
 author:             Luka Kurnjek
 maintainer:         luka.kurnjek@iohk.io
 
-executable homework14
+executable homework15
     main-is: Main.hs
     build-depends:    base >=4.14.3.0
                     , split
