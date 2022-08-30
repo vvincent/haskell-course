@@ -33,4 +33,4 @@ integerToByteString :: Integer -> BS.ByteString
 integerToByteString n = BS.pack $ go (abs n)
                         where
                             go 0 = []
-                            go m =go (m `div` 256) ++ [(toEnum . fromIntegral)(m `mod` 256)] 
+                            go m = go (m `div` 256) ++ [(toEnum . fromIntegral)(m `mod` 256)] 
