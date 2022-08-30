@@ -1,5 +1,4 @@
 import Data.ByteString as BS
-import Data.Binary as Bin
 
 {-
 Create a function that converts the binary representation of a ByteString into an Integer using a base 256 conversion.
