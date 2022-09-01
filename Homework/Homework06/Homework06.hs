@@ -1,8 +1,8 @@
 
 
 -- Question 1
--- Write a function that takes in an integer n and returns a list of the first n
--- numbers of the fibonacci list (https://en.wikipedia.org/wiki/Fibonacci_number). 
+-- Change the code of the function mySort the we wrote in the lesson so that it
+-- will work as the actual sort function from the Data.List module. 
 
 
 -- Question 2
