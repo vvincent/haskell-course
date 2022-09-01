@@ -9,6 +9,9 @@ instance Show EvenNr where
 instance Semigroup EvenNr where
         (<>) (EvenNr a) (EvenNr b) = EvenNr (a*b)
 
+-- Question 2
+-- Definan an instance of a semigroup that adds time for the Time data type bellow
+
 newtype Hour = Hour Int deriving Show
 newtype Min = Min Int deriving Show
 newtype Sec = Sec Int deriving Show
