@@ -1,14 +1,18 @@
 
 
 -- Question 1
--- Write a function that takes in an integer n and returns a list of the first n
--- numbers of the fibonacci list (https://en.wikipedia.org/wiki/Fibonacci_number). 
+-- Change the code of the function mySort the we wrote in the lesson so that it
+-- will work as the actual sort function from the Data.List module. 
 
-fib :: Int -> [Int]
-fib n = addElement [1,1]
-  where addElement xs = 
-          if length xs == n then xs 
-          else addElement (xs ++ [last xs + last (init xs)])
+mySort :: [Int] -> [Int]
+mySort [] = []
+mySort xs = minimum xs : mySort (removeMin xs)
+  where removeMin ys = let minYs = minimum ys
+                       in removeMin' minYs ys
+        removeMin' minYs [] = []
+        removeMin' minYs ys = if head ys == minYs 
+                              then tail ys
+                              else head ys : removeMin' minYs (tail ys)
 
 -- Question 2
 -- Write a function that takes in an integer n, calculates the factorial n! and 
