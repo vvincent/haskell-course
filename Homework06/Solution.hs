@@ -26,16 +26,25 @@ factorial n = accumulate 2 "1" ++ " = " ++ show result
         result = product [1..n]
 
 -- Question 3
--- Write a function that takes a number n of type Int and returns a list of prime
--- numbers that are not greater then the number n. You can use the function "rem"
--- that gives you the remainder for division.
+-- Write your own version of functions zip and zipWith. Use pattern matching.
+-- zip takes in two lists and returns a list of tuple pairs. zipWith works similar
+-- as zip just that it also takes in a function and applies it to the pair so that
+-- it returns just a list of elements with the same type as the input lists.
 
-primes :: Int -> [Int]
-primes n = if n < 2 then []
-           else getPrimes [2] 3
-  where getPrimes xs x
-            | last xs > n = init xs
-            | checkPrimality xs x = getPrimes (xs ++ [x]) (x + 1)
-            | otherwise = getPrimes xs (x + 1)
-        checkPrimality :: [Int] -> Int -> Bool
-        checkPrimality xs x = length (filter (== 0) (map (rem x) xs)) == 0
+-- zip [1..3] [3..1]
+-- returns: [(1,3),(2,2),(3,1)]
+
+-- zipWith (+) [1,2,3] [1,2,3]
+-- returns: [2,4,6]
+
+myZip :: [a] -> [b] -> [(a,b)]
+myZip [] _ = []
+myZip _ [] = []
+myZip [x] [y] = [(x,y)]
+myZip (x:xs) (y:ys) = (x,y) : myZip xs ys
+
+myZipWith :: (a -> a -> a) -> [a] -> [a] -> [a]
+myZipWith f [] _ = []
+myZipWith f _ [] = []
+myZipWith f [x] [y] = [f x y]
+myZipWith f (x:xs) (y:ys) = f x y : myZipWith f xs ys

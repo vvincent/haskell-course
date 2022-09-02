@@ -29,21 +29,6 @@ myFoldR f start [x] = f x start
 myFoldR f start xs = myFoldR f (f (last xs) start) $ init xs
 
 -- Question 3
--- Write your own version of functions zip and zipWith. Use pattern matching. 
-
-myZip :: [a] -> [b] -> [(a,b)]
-myZip [] _ = []
-myZip _ [] = []
-myZip [x] [y] = [(x,y)]
-myZip (x:xs) (y:ys) = (x,y) : myZip xs ys
-
-myZipWith :: (a -> a -> a) -> [a] -> [a] -> [a]
-myZipWith f [] _ = []
-myZipWith f _ [] = []
-myZipWith f [x] [y] = [f x y]
-myZipWith f (x:xs) (y:ys) = f x y : myZipWith f xs ys
-
--- Question 4
 -- Write your own version of scnal and scanr functions. You can use pattern matching.
 
 myScanL :: (a -> a -> a) -> a -> [a] -> [a]
