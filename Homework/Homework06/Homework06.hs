@@ -11,7 +11,14 @@
 
 
 -- Question 3
--- Write a function that takes a number n of type Int and returns a list of prime
--- numbers that are not greater then the number n. You can use the function "rem"
--- that gives you the remainder for division.
+-- Write your own version of functions zip and zipWith. Use pattern matching.
+-- zip takes in two lists and returns a list of tuple pairs. zipWith works similar
+-- as zip just that it also takes in a function and applies it to the pair so that
+-- it returns just a list of elements with the same type as the input lists.
+
+-- zip [1..3] [3..1]
+-- returns: [(1,3),(2,2),(3,1)]
+
+-- zipWith (+) [1,2,3] [1,2,3]
+-- returns: [2,4,6]
 
