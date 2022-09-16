@@ -8,11 +8,8 @@ f1 x y z = x ** (y/z)
 f2 :: Double -> Double -> Double -> Double
 f2 x y z = sqrt (x/y - z)
 
-f3 :: Char -> Double -> String -> String
-f3 x y z = x:((show y) ++ z)
-
-f4 :: Double -> Double -> Bool -> [Bool]
-f4 x y z = [x > y] ++ [z]
+f3 :: Bool -> Bool -> [Bool]
+f3 x y = [x == True] ++ [y]
 
 f5 :: String -> String -> String -> Bool
 f5 x y z = x == (y ++ z)
@@ -56,16 +53,6 @@ v4 = 3.1415 :: Double
 v5 = round v4 :: Int
 
 -- Question 6
--- How would you write the prod function from our lesson so that it works for Int and Double? Does the code compile?
-
--- You can write it as following. But you need to use a type class constraint in the type signature of your function.
--- The constraint is the "Num a =>" that tells haskell "a" can be only of certain types that implement the Num class 
--- for which the multiplication function (*) is defined. Without this, the compilation would give an error. We will 
--- learn more about type classes in lesson "Intro to type classes".
-prod :: Num a => a -> a -> a
-prod x y = x * y
-
--- Question 7
 -- Can you also define in Haskell list of lists? Did we showed any example of that? How would you access the inner
 -- most elements?
 
