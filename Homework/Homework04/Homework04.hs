@@ -1,6 +1,6 @@
 
 -- Question 1
--- Rewrite the function from the lesson 3A such that you use guards and case-of statements
+-- Rewrite the function from the lesson 3 such that you use guards and case-of statements
 
 
 -- Question 2
