@@ -7,3 +7,6 @@ ENV PATH="/home/gitpod/.ghcup/bin:${PATH}"
 # Install hls and stack
 RUN ghcup install hls
 RUN ghcup install stack
+
+# Install zlib
+RUN apt install zlib1g
