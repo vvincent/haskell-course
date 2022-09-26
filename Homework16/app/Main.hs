@@ -22,14 +22,22 @@ data Country = Country { name :: String, population :: Int, location :: Continen
 jsonItaly :: LBS.ByteString
 jsonItaly = "{\"location\":\"Europe\",\"name\":\"Italy\",\"population\":55550000}"
 
+decodedItaly = decode jsonItaly :: Maybe Country
+
 jsonSpain :: LBS.ByteString
 jsonSpain = "{\"location\":\"Europe\",\"name\":\"Spain\",\"population\":47350000}"
+
+decodedSpain = decode jsonSpain :: Maybe Country
 
 jsonAustralia :: LBS.ByteString
 jsonAustralia  = "{\"location\":\"Oceania\",\"name\":\"Australia\",\"population\":25690000}"
 
+decodedAustralia = decode jsonAustralia :: Maybe Country
+
 jsonIndia :: LBS.ByteString
 jsonIndia = "{\"location\":\"Asia\",\"name\":\"India\",\"population\":1380000000}"
+
+decodedIndia = decode jsonIndia :: Maybe Country
 
 -- Question 3
 -- Add the correct instances that should be derived in the below data type for deriving JSON formats.
@@ -47,7 +55,7 @@ encodedExampleLeaf = encode exampleLeaf
 -- With the below getUser function we can fetch some API that will serve us a user from a list of 10 users.
 -- Write a Haskell data type that can convert this JSON representation of a user to a Haskell datatype
 
-{- The following is JSON structured
+{- The following is JSON structured and is the output of the API for user 4 out of the 10.
 
 {
   "id": 4,
@@ -77,10 +85,9 @@ encodedExampleLeaf = encode exampleLeaf
 
 getUserFromAPI :: Int -> IO LBS.ByteString
 getUserFromAPI n = do if n `Prelude.elem` [1..10] 
-               then do
-                 json <- simpleHttp $ "https://jsonplaceholder.typicode.com/users/" ++ (show n) 
-                 return json
-               else return "given integer is not in the range [1..10]"
+                      then do json <- simpleHttp $ "https://jsonplaceholder.typicode.com/users/" ++ (show n) 
+                              return json
+                      else return "given integer is not in the range [1..10]"
 
 data Geo = Geo {
           lat :: String
@@ -113,7 +120,7 @@ data User = User {
 } deriving (Show, Generic, ToJSON, FromJSON)
 
 getUserAsData :: Int -> IO (Maybe User)
-getUserAsData n = do bs <- getUser n
+getUserAsData n = do bs <- getUserFromAPI n
                      let user = decode bs :: Maybe User
                      return user
 
