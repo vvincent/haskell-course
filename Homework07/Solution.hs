@@ -29,7 +29,7 @@ myFoldR f start [x] = f x start
 myFoldR f start xs = myFoldR f (f (last xs) start) $ init xs
 
 -- Question 3
--- Write your own version of scnal and scanr functions. You can use pattern matching.
+-- Write your own version of scanl and scanr functions. You can use pattern matching.
 
 myScanL :: (a -> a -> a) -> a -> [a] -> [a]
 myScanL f x [] = [x]
