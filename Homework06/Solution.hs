@@ -1,20 +1,27 @@
 
-
 -- Question 1
--- Change the code of the function mySort the we wrote in the lesson so that it
--- will work as the actual sort function from the Data.List module. 
+-- Write a version of the product function without using pattern matching.
 
-mySort :: [Int] -> [Int]
-mySort [] = []
-mySort xs = minimum xs : mySort (removeMin xs)
-  where removeMin ys = let minYs = minimum ys
-                       in removeMin' minYs ys
-        removeMin' minYs [] = []
-        removeMin' minYs ys = if head ys == minYs 
-                              then tail ys
-                              else head ys : removeMin' minYs (tail ys)
+myProduct :: [Int] -> Int
+myProduct xs = if xs == [] then 0
+               else multiply xs 
+  where multiply xs = if xs == [] then 1
+                      else head xs * multiply (tail xs)
 
 -- Question 2
+-- Write a function that takes in a list of integers and removes from it the smallest
+-- element. If the element is occuring more then once, it should remove all of them.
+
+removeMin :: [Int] -> [Int]
+removeMin [] = []
+removeMin xs = let minX = minimum xs
+               in removeMin' minX xs
+  where removeMin' minX [] = []
+        removeMin' minX ys = if head ys == minX 
+                             then removeMin' minX (tail ys)
+                             else head ys : removeMin' minX (tail ys)
+
+-- Question 3
 -- Write a function that takes in an integer n, calculates the factorial n! and 
 -- returns a string in the form of 1*2* ... *n = n! where n! is the actual result. 
 
@@ -25,11 +32,8 @@ factorial n = accumulate 2 "1" ++ " = " ++ show result
           else accumulate (x+1) (string ++ "*" ++ show x)
         result = product [1..n]
 
--- Question 3
+-- Question 4
 -- Write your own version of functions zip and zipWith. Use pattern matching.
--- zip takes in two lists and returns a list of tuple pairs. zipWith works similar
--- as zip just that it also takes in a function and applies it to the pair so that
--- it returns just a list of elements with the same type as the input lists.
 
 -- zip [1..3] [3..1]
 -- returns: [(1,3),(2,2),(3,1)]
