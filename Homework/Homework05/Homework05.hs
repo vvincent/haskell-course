@@ -1,24 +1,26 @@
+-- Create a higher-order function that takes 3 parameters: A function and the two parameters that that function takes, and
+-- flips the order of the parameters.
+-- For example this: `(/) 6 2` returns `3`. But this: `flip' (/) 6 2` returns `0.3333333333`
 
--- Question 1
--- For the expressions below try to gues what the result is for y=5 before you run any of
--- the functions. The rule for variable lookup and its priority is called lexical scope.
 
-x = 2 :: Int
+-- Create the `uncurry'` function that converts a curried function to a function on pairs. So this: `(+) 1 2` that returns `3` can be written as
+-- `uncurry' (+) (1,2)` (with the two different arguments inside a pair).
 
-mult1, mult2, mult3 :: Int -> Int
-mult1 y = x * y
-mult2 y = (\x -> x * y) 3
-mult3 y = (\y -> (\x -> x * y) 4) 3
 
--- Question 2
--- Write a function that takes in a positive number n1 and creates a list from 1 .. n1.
--- Then calulate the number n2 = 1/2/.../n1 * 10**n1 and create another list from 1 .. n2,
--- where you can round of n1 and n2 when you create the first and second lists. Sum the 
--- elements of each list and calculate the difference between sum 2 and sum 1. For which 
--- number n1 does the difference jump from a positive to a negative result? 
+-- Create the `curry'` function that converts an uncurried function to a curried function. So this: `fst (1,2)` that returns `1` can be written as
+-- `curry' fst 1 2` (with the tuple converted into two different arguments).
 
--- Use only 2 helper functions and function composition. Do not use any let-in and where
--- blocks. You are allowed only to use the built-in functions: head, tail, last, init and 
--- sum. They all operate on lists of numbers. Try them out to see how they work. You can
--- also help yourself with pattern matching and recursion.
 
+-- Use higher-order functions, partial application, and point-free style to create a function that checks if a word has an uppercase letter.
+-- Start with using just higher-order functions and build from there. 
+
+
+-- Create the `count` function that takes a team ("Red", "Blue", or "Green") and returns the amount of votes the team has inside `votes`.
+
+votes :: [String]
+votes = ["Red", "Blue", "Green", "Blue", "Blue", "Red"]
+
+-- Create a one-line function that filters `cars` by brand and then checks if there are any left.
+
+cars :: [(String,Int)]
+cars = [("Toyota",0), ("Nissan",3), ("Ford",1)]
