@@ -10,16 +10,27 @@ myProduct xs = if xs == [] then 0
 
 -- Question 2
 -- Write a function that takes in a list of integers and removes from it the smallest
--- element. If the element is occuring more then once, it should remove all of them.
+-- element. If the element is occuring more then once, it should remove only the first
+-- occurence of the smallest element.
+
+-- Chalange: Write the this function in such a way that if you add some code to it and
+-- not remove any, the function will be removing all instances of the smallest eleement.
 
 removeMin :: [Int] -> [Int]
 removeMin [] = []
-removeMin xs = let minX = minimum xs
-               in removeMin' minX xs
-  where removeMin' minX [] = []
-        removeMin' minX ys = if head ys == minX 
-                             then removeMin' minX (tail ys)
-                             else head ys : removeMin' minX (tail ys)
+removeMin xs = removeMin' (minimum xs) xs
+  where removeMin' minEl [] = []
+        removeMin' minEl ys = if head ys == minEl 
+                             then tail ys
+                             else head ys : removeMin' minEl (tail ys)
+
+removeMin' :: [Int] -> [Int]
+removeMin' [] = []
+removeMin' xs = removeMin' (minimum xs) xs
+  where removeMin' minEl [] = []
+        removeMin' minEl ys = if head ys == minEl 
+                             then removeMin' minEl (tail ys)
+                             else head ys : removeMin' minEl (tail ys)
 
 -- Question 3
 -- Write a function that takes in an integer n, calculates the factorial n! and 
