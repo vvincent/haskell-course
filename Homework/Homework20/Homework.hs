@@ -15,9 +15,9 @@ ioExample = do
 
 
 -- Question 2
--- Write a function that takes in n of type Int and returns a list of type [Int]. The elements of the list 
--- are combination counts for lists [1 .. x] where x goes from 1 to n. So the fisrt combination count is for 
--- the list [1], the second for the list [1,2] and the last for the list [1..n]. 
+-- Write a function that takes in n of type Int and returns a list of type Maybe [Int]. The elements of the 
+-- list are combination counts for lists [1 .. x] where x goes from 1 to n. So the fisrt combination count is 
+-- for the list [1], the second for the list [1,2] and the last for the list [1..n]. 
 
 -- How to compute a combination count for a list: e.g. the list [1,2] has 4 possible combinations which are: 
 -- (1,1) (1,2) (2,1) and (2,2). Do not use your knowledge of mathematics. Do it by computing all combination 
