@@ -2,7 +2,7 @@
 import Control.Monad.State (MonadState(put, get), runState, State)
 
 -- Question 1
--- Beloow is a version of the Tic-Tac-Toe game that does not use State and
+-- Below is a version of the Tic-Tac-Toe game that does not use State and
 -- gets the player choices from the user input instead of randomly generating
 -- the choices. Re-write it such that you use the State monad.
 
