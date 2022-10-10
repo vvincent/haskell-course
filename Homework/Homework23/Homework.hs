@@ -2,9 +2,9 @@
 import Control.Monad.State (MonadState(put, get), runState, State)
 
 -- Question 1
--- Below is a version of the Tic-Tac-Toe game that does not use State and
--- gets the player choices from the user input instead of randomly generating
--- the choices. Re-write it such that you use the State monad.
+-- Below is a version of the Tic-Tac-Toe game that does not use State and gets
+-- the player choices from the user input instead of randomly generating the choices.
+-- Re-write it such that you use the StateIO monad that we defined in the lesson.
 
 data Player = XPlayer | OPlayer deriving Eq
 data Choice = Empty | X | O deriving Eq
