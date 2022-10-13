@@ -1,7 +1,7 @@
 
 -- Question 1
 -- Take the book code exple from the lesson and write a function that askes the user to
--- inout an index (1, 2 or 3) and returns the title of the book by using the <$> operator.
+-- input an index (1, 2 or 3) and returns the title of the book by using the <$> operator.
 -- The code you need is defined below. If it can't get the title write a message.
 
 import qualified Data.Map as Map
