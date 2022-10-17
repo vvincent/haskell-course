@@ -1,83 +1,130 @@
 
-import Control.Monad.Writer (censor, listens, runWriter, MonadWriter(tell), Writer)
-
 -- Question 1
--- Rewrite the example from the lesson that uses the pass function, such that it 
--- will use the censor function instead. Look at how the type signatures are chaning. 
+-- Below is a version of the Tic-Tac-Toe game that does not use State and gets
+-- the player choices from the user input instead of randomly generating the choices.
+-- Re-write it such that you use the StateIO monad that we defined in the lesson.
 
-logAge :: Int -> Writer [String] Int  
-logAge x = do
-    tell ["Age is: " ++ show x]
-    return x            
-      
-sumAge :: Writer [String] Int
-sumAge = do  
-    a <- logAge 16  
-    b <- logAge 18
-    tell ["Summed age is: " ++ show (a + b)]
-    return (a + b)
+-- We present here only the solution and do not copy the original code from the homework.
 
-process :: Writer [String] Int
-process = do
-    censor transform sumAge
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-} 
 
-transform :: [String] -> [String]
-transform = map ("NOTE: " ++)
+import Control.Monad.Trans (MonadIO(..))
+import Control.Monad (ap, liftM)
+import Control.Monad.State (MonadState(get, put))
 
-main1 :: IO ()
-main1 = do
-    let (age, messages) = runWriter process
-    mapM_ putStrLn messages
+newtype StateIO s a = StateIO {runStateIO :: s -> IO (a, s)}
 
--- Question 2
--- Rewrite the example from the lesson that uses the listen function, such that it 
--- will use the listens function instead.
+instance Functor (StateIO s) where
+    fmap = liftM
 
-type Adding a = Writer [String] a
+instance Applicative (StateIO s) where
+    pure = return
+    (<*>) = ap
 
-logMsg :: String -> Adding ()
-logMsg msg = tell [msg]
+instance Monad (StateIO s) where
+    return a = StateIO $ \s -> return (a, s)
+    n >>= k = StateIO $ \s -> do (a, s') <- runStateIO n s
+                                 runStateIO (k a) s'
 
-add1 :: Int -> Adding Int
-add1 x = do
-    logMsg "Starting add1."
-    let y = x + 1
-    logMsg $ "Computed result: " ++ show y
-    return y
+instance MonadIO (StateIO s) where
+    liftIO io = StateIO $ \st -> do x <- io
+                                    return (x, st)
 
-start :: Int -> Adding Int
-start x = do
-    (n, logLines) <- listens length $ add1 x
-    logMsg $ "add1 logged " ++ show logLines ++ " lines"
-    return n
+instance MonadState s (StateIO s) where
+    get = StateIO $ \st -> return (st,st)
+    put st = StateIO $ const $ return ((),st)
 
-main2 :: IO ()
-main2 = do
-    print "Input an integer number:"
-    n <- (read <$> getLine) :: IO Int
-    let (result, logs) = runWriter $ start n
-    print $ "Result is: " ++ show result
-    putStrLn "Logs are: "
-    mapM_ print logs
+data Player = XPlayer | OPlayer deriving (Eq, Show)
 
--- Question 3
--- Write a program that asks the user for 2 integers and then computes their greatest
--- common divisor with Euclid’s algorithm. The programm should also write out the steps
--- that the algorithm is performing. Use a Writer monad to acomplis this.
+data Choice = Empty | X | O
+  deriving (Show, Eq)
 
-myGCD :: Int -> Int -> Writer [String] Int  
-myGCD a b  
-    | b == 0 = do  
-        tell ["Greatest common divisor is: " ++ show a]
-        return a  
-    | otherwise = do  
-        tell [show a ++ " mod " ++ show b ++ " = " ++ show (a `mod` b)]
-        myGCD b (a `mod` b)
+type FieldIndex = Int
 
-main3 :: IO ()
-main3 = do
-    putStrLn "Input first number:"
-    n1 <- (read <$> getLine) :: IO Int
-    putStrLn "Input second number:"
-    n2 <- (read <$> getLine) :: IO Int
-    mapM_ putStrLn $ snd $ runWriter (myGCD n1 n2) 
+data GameState = GameState
+  { currentBoard :: [Choice]
+  , currentPlayer :: Player
+  } deriving Show
+
+main :: IO ()
+main = do
+    putStrLn "Board indexes are:"
+    mapM_ putStrLn ["1|2|3", "-----", "4|5|6", "-----", "7|8|9"]
+    let initState = GameState
+                      [Empty | boardInd <- [1..9]]
+                      XPlayer
+    playGame initState
+
+playGame :: GameState -> IO ()
+playGame gs = do
+    let player = currentPlayer gs
+    let board = currentBoard gs
+
+    if player == XPlayer
+    then putStrLn "Player X make your choice:"
+    else putStrLn "Player O make your choice:"
+
+    (gameFinished, newGS) <- runStateIO resolveTurn gs
+    if gameFinished 
+    then do
+        printBoard newGS
+        putStrLn "Game finished."
+    else playGame newGS
+
+resolveTurn :: StateIO GameState Bool
+resolveTurn = do
+    gs <- get
+    let freeFields = getFreeFields gs
+    choice <- liftIO $ getChoice freeFields
+    applyMove choice
+    isGameDone
+
+getFreeFields :: GameState -> [Int]
+getFreeFields gs = [ind | ind <- [0..8], board !! ind == Empty]
+    where board = currentBoard gs
+
+getChoice :: [Int] -> IO Int
+getChoice freeFields = do
+    choice <- (read <$> getLine) :: IO Int
+    if (choice - 1) `elem` freeFields
+    then return choice
+    else do
+        putStrLn "This is not a valid choice. Try again:"
+        getChoice freeFields
+
+applyMove :: Int -> StateIO GameState ()
+applyMove choice = do
+  gs <- get
+  let player = currentPlayer gs
+      board = currentBoard gs
+      newBoard = if player == XPlayer
+                 then [if ind /= choice then board !! (ind-1) else X | ind <- [1..9]]
+                 else [if ind /= choice then board !! (ind-1) else O | ind <- [1..9]]
+  let newGS = gs { currentPlayer = nextPlayer player, currentBoard = newBoard }
+  liftIO $ printBoard newGS
+  put newGS
+
+nextPlayer :: Player -> Player
+nextPlayer XPlayer = OPlayer
+nextPlayer OPlayer = XPlayer
+
+isGameDone :: StateIO GameState Bool
+isGameDone = do
+  gs <- get
+  let freeFields = getFreeFields gs
+  return $ length freeFields == 0
+
+printBoard :: GameState -> IO ()
+printBoard gs = do
+    let board = currentBoard gs
+    let stateToString st = case st of
+                             Empty -> "-"
+                             X -> "X"
+                             O -> "O"
+        printInd ind = stateToString $ board !! ind
+    mapM_ putStr [printInd 0,"|", printInd 1,"|", printInd 2, "\n"]
+    putStrLn "-----"
+    mapM_ putStr [printInd 3,"|", printInd 4,"|", printInd 5, "\n"]
+    putStrLn "-----"
+    mapM_ putStr [printInd 6,"|", printInd 7,"|", printInd 8, "\n"]

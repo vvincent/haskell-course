@@ -1,69 +1,78 @@
 
--- This statement is a language pragma about which you will learn in lesson 12. We use it
--- here so we can have same function names in record syntax definitions of different types.
-{-# LANGUAGE DuplicateRecordFields #-}
-
--- This language extension and import statement are used for handling ByteStrings about
--- which you will learn in lesson 11
-{-# LANGUAGE OverloadedStrings #-}
-import Data.ByteString (ByteString)
-
 -- Question 1
--- Algebraic data types are types combined of other types. You have 2 choices for combining.
--- The first one is called product types where you combine types with a logical "and":
--- type Address = String
--- type Number = Int
--- data productType = Address Number
--- The second one is called sum types where you combine types with a logical "or":
--- type sumType = Descriptive Address | Numeric Number
+-- You have a list of names defined below. If you use the sort function on the list
+-- the elements are sorted by their first name. The function uses the compare function
+-- from the Ord type class. Try to implement the Ord type class for the FullName type 
+-- such that sort function will sort the elements regarding to their last name.
 
--- Below you have a data type defined and you want to add another data type to your code.
--- Solve the problem in 2 ways. First use only product types where you extract the common
--- parameters and define a new type that you then use for constructing both types. Second
--- use sum types to define the base common type. Try to solve the sum type in various ways.
+import Data.List (sort)
+newtype FullName = Name (String, String) deriving (Show, Eq)
 
-data Guitar = Guitar { brand :: String
-                     , price :: Float
-                     , color :: String }
+unsortedNames :: [FullName]
+unsortedNames = [Name ("Mark","Knopfler"),Name ("Jimmy","Page"),Name ("Brian","May")]
 
-data Drums = Drums { brand :: String
-                   , price :: Float
-                   , drumCount :: Int }
+-- sort unsortedNames -- without implementing the Ord type class for FullName type
+-- [("Brian","May"),("Jimmy","Page"),("Mark","Knopfler")]
 
--- First solution
-data InstrumentData = InsData { brand :: String
-                              , price :: Float }
-
-type GuitarColor = String
-data Guitar1 = Guitar1 InstrumentData GuitarColor
-
-type DrumsCount = Int
-data Drums1 = Drums1 InstrumentData DrumsCount
-
--- Second solution
-data Instrument1 = Guitar2 InstrumentData GuitarColor | Drums2 InstrumentData DrumsCount
--- or
-data Instrument2 = Guitar3 { brand :: String
-                           , price :: Float
-                           , color :: String }
-                 | Drums3 { brand :: String
-                          , price :: Float
-                          , drumCount :: Int }
--- or
-data AdditionalData = Color String | Price Int
-data Instrument3 = Instrument3 InstrumentData AdditionalData
+instance Ord FullName where
+  compare (Name (first1, last1)) (Name (first2, last2)) = compare last1 last2
 
 -- Question 2
--- Try to implement a data type that in its definition is refering to itself and make an
--- instace of it. And example of this is the linked list that you have saw in the lesson. 
--- Here is another way to define it: data List a = Empty | Cons a (List a) deriving Show 
+-- The Enum type class has the function toEnum and fromEnum that let you convert
+-- user defined types into Int and vice versa. For the type MyGrades below we
+-- derive Enum. Implement for this type the Eq and Ord type classes by using one
+-- of the Enum functions.
 
--- We will show here the Plutus data type called Data that has the following definition:
-data Data = Constr Integer [Data]
-          | Map [(Data, Data)]
-          | List [Data]
-          | I Integer
-          | B ByteString
+data MyGrades = A | B | C deriving Enum
 
-myData :: Data
-myData = Map [(I 1, B "one"), (I 2, B "two"), (I 3, B "three")]
+instance Eq MyGrades where
+ (==) grade1 grade2 = fromEnum grade1 == fromEnum grade2
+
+instance Ord MyGrades where
+ compare grade1 grade2 = compare (fromEnum grade1) (fromEnum grade2)
+
+-- Question 3
+-- Create the type "Position" that can have the values: Intern, Junior, Senior, Manager, Chief.
+-- Then create the type Experience that can have the values: Programming, Managing, Leading.
+-- Create a function that takes in two candidates that have a Experience value and years of experience 
+-- provided as an integer. And the function should returs the position apropriate for the candidate
+-- and also said which candidate has priority for employment (The higher Position gives higher
+-- priority and for same positions the years of experience can be compared). Test the function on a
+-- set of three candidates that have experience and years: Programming 7, Programming 8, Managing 5.
+
+data Position = Intern | Junior | Senior | Manager | Chief deriving (Show, Eq, Ord)
+data Experience = Programming | Managing | Leading deriving (Show, Eq, Ord)
+
+type WorkingYears = Int
+data Candidate = CandidateData Experience WorkingYears deriving (Show, Eq, Ord)
+
+candidate1 :: Candidate
+candidate1 = CandidateData Programming 7
+
+candidate2 :: Candidate
+candidate2 = CandidateData Programming 8
+
+candidate3 :: Candidate
+candidate3 = CandidateData Managing 5
+
+data Assesment = Assesment Position Position String deriving Show
+compareCandidates :: Candidate -> Candidate -> Assesment
+compareCandidates c1 c2 = Assesment p1 p2 msg 
+  where p1 = assesCandidate c1
+        p2 = assesCandidate c2
+        msg
+          | c1 < c2 = "Second candidate has priority."
+          | c1 > c2 = "First candidate has priority."
+          | otherwise = "Candidates have same priority"
+
+assesCandidate :: Candidate -> Position
+assesCandidate (CandidateData ex wy)
+    | ex == Programming = getProgramingLevel wy
+    | ex == Managing = Manager
+    | ex == Leading = Chief
+
+getProgramingLevel :: Int -> Position
+getProgramingLevel wy
+    | wy < 2 = Intern
+    | wy < 6 = Junior
+    | otherwise = Senior

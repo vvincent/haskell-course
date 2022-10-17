@@ -1,11 +1,11 @@
 cabal-version:      2.4
-name:               Homework16
+name:               Homework
 version:            0.1.0.0
 
 author:             perturbing
 maintainer:         thomas.vellekoop@iohk.io
 
-executable Homework16
+executable Homework
     main-is:          Main.hs
     build-depends:    base ^>=4.14.3.0
                     , aeson

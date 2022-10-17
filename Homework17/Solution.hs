@@ -1,64 +1,126 @@
+
+import Text.Read (readMaybe) 
+import Control.Monad (forM_)
+
 -- Question 1
--- Define an instance of a semigroup that multiplies the even number data type EvenNr bellow
+-- For the Wrapper type from the previous lesson create also an instance of Applicative.
+-- Then create a function that asks the user to input two numbers, creates Wrapper types
+-- with them and summs them. Use the <*> operator and pure. In case one user input is not 
+-- a valid number the result should be the Empty data constructor of the Wrapper type. You
+-- can use the readMaybe function that we import at the beginning.   
 
-data EvenNr = EvenNr Integer
+data Wrapper a = Empty | Wrapper a deriving Show
 
-instance Show EvenNr where
-        show (EvenNr n) = show (2*n) 
-		
-instance Semigroup EvenNr where
-        (<>) (EvenNr a) (EvenNr b) = EvenNr (a*b)
+appWrapper :: Wrapper (a -> b) -> Wrapper a -> Wrapper b
+appWrapper f Empty = Empty
+appWrapper Empty x = Empty
+appWrapper (Wrapper f) (Wrapper n) = Wrapper (f n)
+
+instance Functor Wrapper where
+    fmap f val = (pure f) <*> val   
+
+instance Applicative Wrapper where
+    (<*>) = appWrapper
+    pure val = Wrapper val
+
+sumWrapperNums :: IO ()
+sumWrapperNums = do
+    n1 <- getLine
+    n2 <- getLine
+
+    let maybeNum1 = readMaybe n1 :: Maybe Double 
+    let maybeNum2 = readMaybe n2 :: Maybe Double 
+    
+    let w1 = createWrapper maybeNum1
+    let w2 = createWrapper maybeNum2
+    
+    print $ (+) <$> w1 <*> w2
+
+createWrapper :: Maybe Double -> Wrapper Double
+createWrapper Nothing = Empty
+createWrapper (Just n) = Wrapper n
 
 -- Question 2
--- Definan an instance of a semigroup that adds time for the Time data type bellow
+-- Write a function that takes an aritmetic operator that has an instance of Fractional: +, -, *, / 
+-- and a list of type [Double] and then calulates the number of all possible computations where you 
+-- can take any of two elements from the list and uses the provided operator on them. For which of 
+-- the operators above is the number the smallest for the list [1..5]? Does the operator that has 
+-- the smallest number change when you chage the input list?
 
-newtype Hour = Hour Int deriving Show
-newtype Min = Min Int deriving Show
-newtype Sec = Sec Int deriving Show
-data Time = Time (Hour, Min ,Sec) deriving Show
+uniqueCombinations :: (Fractional a, Eq a) => (a -> a -> a) -> [a] -> Int
+uniqueCombinations func myList = length $ unique allCombinations
+    where allCombinations = map func myList <*> myList
+          unique [] = []
+          unique (x:xs) = x : unique (filter (/= x) xs)
 
-secToTime :: Sec -> Time
-secToTime (Sec x) = let h = (x `div` 3600) `mod` 24
-                        m = (x `mod` 3600) `div` 60
-                        s = x `mod` 60
-                  in Time (Hour h, Min m, Sec s)
+operators :: Fractional a => [a -> a -> a]
+operators = [(+), (-), (*), (/)]
 
-timeToSec :: Time -> Sec
-timeToSec (Time (Hour h, Min m, Sec s)) = Sec (h*3600+m*60+s)
+printCombs1to5 :: IO ()
+printCombs1to5 = do
+    let list15 = [1..5]
+    forM_ operators $ \func -> do
+        print $ uniqueCombinations func list15
 
-instance Semigroup Time where
-        (<>) a b = let Sec n = timeToSec a
-                       Sec m = timeToSec b
-                   in secToTime (Sec (n + m)) 
+-- We briefly spoke about mapM_ in lesson 18. The forM_ function is same just with arguments fliped.
+-- The least combinations give the operators + and -, and this stays the same no matter the list.
 
 -- Question 3
--- Is it possible to extend the semigroup instance of EvenNr above to a monoid?
--- Does there exist another instance of a semigroup that makes the the collection of even numbers a monoid?
--- If so, implement this semigroup and monoid.
+-- For the Cube type and data defined below we create a Show instance that prints possible combinations
+-- of the numbers and their probabilites. Create a Nums Semigroup instance that combines e.g. the strings
+-- "1" and "2" to the string "1-2". Create a Semigroup and Monoid instance for Cube that combines all
+-- posible cube results for 2 cubes and their probabilities into a new Cube object. Then evalueate:
+-- cube1 <> cube2 and mconcat [cube1, cube1, cube1]. The result for cube1 <> cube2 should be:
 
-{-
-No it is not possible to extend the above semigroup instnace to a monoid instance. The even mumbers with the above
-instance of <> has no idedentiy element. 
+-- Case: 1-1, Probability: 6.0e-2
+-- Case: 1-2, Probability: 9.0e-2
+-- Case: 1-3, Probability: 0.15
+-- Case: 2-1, Probability: 0.14
+-- Case: 2-2, Probability: 0.21
+-- Case: 2-3, Probability: 0.35
 
-It is possible to make the collection of even number a monoid with addition as its associative operator.
--}
+newtype Nums = Num String
+type Numbers = [Nums]
+type Probabilities = [Double]
 
-data EvenNr2 = EvenNr2 Integer
+data Cube = Cube Numbers Probabilities
 
-instance Show EvenNr2 where
-        show (EvenNr2 n) = show (2*n)
+showPair :: Nums -> Double -> String
+showPair (Num num) prob = mconcat ["Case: ",num,", Probability: ", show prob,"\n"]
 
-instance Semigroup EvenNr2 where
-        (<>) (EvenNr2 a) (EvenNr2 b) = EvenNr2 (a+b)
+instance Show Cube where
+   show (Cube nums probs) = mconcat pairs
+     where pairs = zipWith showPair nums probs
 
-instance Monoid EvenNr2 where
-        mempty = EvenNr2 0
-        mappend = (<>)
+instance Semigroup Cube where
+  (<>) cube1 (Cube [] []) = cube1
+  (<>) (Cube [] []) cube2 = cube2 
+  (<>) (Cube nums1 probs1) (Cube nums2 probs2) = Cube newNums newProbs
+    where newNums = combineNums nums1 nums2
+          newProbs = combineProbs probs1 probs2
 
+instance Semigroup Nums where
+  (<>) (Num s1) (Num "") = Num s1
+  (<>) (Num "") (Num s2) = Num s2
+  (<>) (Num s1) (Num s2) = Num (s1 ++ "-" ++ s2)
 
--- Question 4
--- Define an instance of a monoid for the Time data type.
+combineNums :: Numbers -> Numbers -> Numbers
+combineNums nums1 nums2 = (<>) <$> nums1 <*> nums2
 
-instance Monoid Time where
-        mempty = Time (Hour 0, Min 0, Sec 0)
-        mappend = (<>)
+combineProbs :: Probabilities -> Probabilities -> Probabilities
+combineProbs probs1 probs2 = (*) <$> probs1 <*> probs2
+
+instance Monoid Cube where
+    mempty = Cube [] []
+    mappend = (<>)
+
+cube1 :: Cube
+cube1 = Cube [Num "1", Num "2"] [0.3, 0.7]
+
+cube2 :: Cube
+cube2 = Cube [Num "1", Num "2", Num "3"] [0.2, 0.3, 0.5]
+
+main :: IO ()
+main = do
+  print $ cube1 <> cube2
+  print $ mconcat [cube1, cube1, cube1]

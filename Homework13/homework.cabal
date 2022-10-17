@@ -8,7 +8,7 @@ license-file:       LICENSE
 author:             Luka Kurnjek
 maintainer:         luka.kurnjek@iohk.io
 
-executable homework14
+executable homework
     main-is: Main.hs
     build-depends:    base >=4.14.3.0
                     , split

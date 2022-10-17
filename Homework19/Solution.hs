@@ -1,126 +1,76 @@
 
-import Text.Read (readMaybe) 
-import Control.Monad (forM_)
+import Control.Monad (forM)
+import Data.Maybe (fromJust)
+import Data.List (elemIndex)
 
 -- Question 1
--- For the Wrapper type from the previous lesson create also an instance of Applicative.
--- Then create a function that asks the user to input two numbers, creates Wrapper types
--- with them and summs them. Use the <*> operator and pure. In case one user input is not 
--- a valid number the result should be the Empty data constructor of the Wrapper type. You
--- can use the readMaybe function that we import at the beginning.   
+-- Rewrite the following code below that used do-notation to equivalent code that does not use do-notation. 
 
-data Wrapper a = Empty | Wrapper a deriving Show
-
-appWrapper :: Wrapper (a -> b) -> Wrapper a -> Wrapper b
-appWrapper f Empty = Empty
-appWrapper Empty x = Empty
-appWrapper (Wrapper f) (Wrapper n) = Wrapper (f n)
-
-instance Functor Wrapper where
-    fmap f val = (pure f) <*> val   
-
-instance Applicative Wrapper where
-    (<*>) = appWrapper
-    pure val = Wrapper val
-
-sumWrapperNums :: IO ()
-sumWrapperNums = do
-    n1 <- getLine
-    n2 <- getLine
-
-    let maybeNum1 = readMaybe n1 :: Maybe Double 
-    let maybeNum2 = readMaybe n2 :: Maybe Double 
-    
-    let w1 = createWrapper maybeNum1
-    let w2 = createWrapper maybeNum2
-    
-    print $ (+) <$> w1 <*> w2
-
-createWrapper :: Maybe Double -> Wrapper Double
-createWrapper Nothing = Empty
-createWrapper (Just n) = Wrapper n
+ioExample :: IO ()
+ioExample = do
+  print "Input number:"
+  string <- getLine
+  let n = read string
+      add1 x = x + 1
+  print (add1 n)
+  
+ioExample' :: IO () 
+ioExample' = 
+  print "Input number:" >>
+    getLine >>= 
+      (\string ->
+        return ((\n -> 
+                  (\add1 -> 
+                    (add1 n)
+                  ) (\x -> x + 1)
+                ) (read string)
+               )
+      ) >>= 
+      print
 
 -- Question 2
--- Write a function that takes an aritmetic operator that has an instance of Fractional: +, -, *, / 
--- and a list of type [Double] and then calulates the number of all possible computations where you 
--- can take any of two elements from the list and uses the provided operator on them. For which of 
--- the operators above is the number the smallest for the list [1..5]? Does the operator that has 
--- the smallest number change when you chage the input list?
+-- Write a function that takes in n of type Int and returns a list of type Maybe [Int]. The elements of the 
+-- list are combination counts for lists [1 .. x] where x goes from 1 to n. So the fisrt combination count is 
+-- for the list [1], the second for the list [1,2] and the last for the list [1..n]. 
 
-uniqueCombinations :: (Fractional a, Eq a) => (a -> a -> a) -> [a] -> Int
-uniqueCombinations func myList = length $ unique allCombinations
-    where allCombinations = map func myList <*> myList
-          unique [] = []
-          unique (x:xs) = x : unique (filter (/= x) xs)
+-- How to compute a combination count for a list: e.g. the list [1,2] has 4 possible combinations which are: 
+-- (1,1) (1,2) (2,1) and (2,2). Do not use your knowledge of mathematics. Do it by computing all combination 
+-- pairs and counting them. If the user inputs a negative number return a Nothing value. In your code try to 
+-- simulate a for loop with the funtion forM. 
 
-operators :: Fractional a => [a -> a -> a]
-operators = [(+), (-), (*), (/)]
+-- Additional challange: Try to write your code in a single function and make it as short as possible.
 
-printCombs1to5 :: IO ()
-printCombs1to5 = do
-    let list15 = [1..5]
-    forM_ operators $ \func -> do
-        print $ uniqueCombinations func list15
-
--- We briefly spoke about mapM_ in lesson 18. The forM_ function is same just with arguments fliped.
--- The least combinations give the operators + and -, and this stays the same no matter the list.
+combinationCount :: Int -> Maybe [Int]
+combinationCount n = do
+    if n < 0 then Nothing else
+      let
+        allCombinations list = (\x y -> (x,y)) <$> list <*> list
+        combCountList = forM [1..n] $ \i -> do
+                          let combCount = length $ allCombinations [1..i]
+                          return combCount
+      in combCountList
 
 -- Question 3
--- For the Cube type and data defined below we create a Show instance that prints possible combinations
--- of the numbers and their probabilites. Create a Nums Semigroup instance that combines e.g. the strings
--- "1" and "2" to the string "1-2". Create a Semigroup and Monoid instance for Cube that combines all
--- posible cube results for 2 cubes and their probabilities into a new Cube object. Then evalueate:
--- cube1 <> cube2 and mconcat [cube1, cube1, cube1]. The result for cube1 <> cube2 should be:
+-- If you succesfully computed the function from the previous example you should get for n = 5 the list
+-- [1,4,9,16,25] which clearly represents the function f(x) = x**2. Write now a function that uses the
+-- fittingFunc defined below and finds the best exponent a from the input list of type [Double] that fits 
+-- the function f(x) = x**2. So for instance for [1.5, 1.6 .. 2.5] it should return 2.0. Your fitting 
+-- check should be done by calculating the mean squared error: (x - x1)^2 + ... + (x - xn)^2
 
--- Case: 1-1, Probability: 6.0e-2
--- Case: 1-2, Probability: 9.0e-2
--- Case: 1-3, Probability: 0.15
--- Case: 2-1, Probability: 0.14
--- Case: 2-2, Probability: 0.21
--- Case: 2-3, Probability: 0.35
+-- Additional challange: Instead of using x**2 in your code use your solution function from Question 2.
 
-newtype Nums = Num String
-type Numbers = [Nums]
-type Probabilities = [Double]
+fittingFunc :: Double -> Double -> Double
+fittingFunc a x = x ** a
 
-data Cube = Cube Numbers Probabilities
-
-showPair :: Nums -> Double -> String
-showPair (Num num) prob = mconcat ["Case: ",num,", Probability: ", show prob,"\n"]
-
-instance Show Cube where
-   show (Cube nums probs) = mconcat pairs
-     where pairs = zipWith showPair nums probs
-
-instance Semigroup Cube where
-  (<>) cube1 (Cube [] []) = cube1
-  (<>) (Cube [] []) cube2 = cube2 
-  (<>) (Cube nums1 probs1) (Cube nums2 probs2) = Cube newNums newProbs
-    where newNums = combineNums nums1 nums2
-          newProbs = combineProbs probs1 probs2
-
-instance Semigroup Nums where
-  (<>) (Num s1) (Num "") = Num s1
-  (<>) (Num "") (Num s2) = Num s2
-  (<>) (Num s1) (Num s2) = Num (s1 ++ "-" ++ s2)
-
-combineNums :: Numbers -> Numbers -> Numbers
-combineNums nums1 nums2 = (<>) <$> nums1 <*> nums2
-
-combineProbs :: Probabilities -> Probabilities -> Probabilities
-combineProbs probs1 probs2 = (*) <$> probs1 <*> probs2
-
-instance Monoid Cube where
-    mempty = Cube [] []
-    mappend = (<>)
-
-cube1 :: Cube
-cube1 = Cube [Num "1", Num "2"] [0.3, 0.7]
-
-cube2 :: Cube
-cube2 = Cube [Num "1", Num "2", Num "3"] [0.2, 0.3, 0.5]
-
-main :: IO ()
-main = do
-  print $ cube1 <> cube2
-  print $ mconcat [cube1, cube1, cube1]
+findExponent :: [Double] -> Double
+findExponent candicates = candicates !! fromJust indexPosition
+    where corelations = do
+              tmpExponent <- candicates
+              let function = fittingFunc tmpExponent
+                  fittingData = map function [1..10]
+                  actualData = map fromIntegral (fromJust $ combinationCount 10) :: [Double]
+                  differences = zipWith (-) fittingData actualData
+                  corelation = sum $ map (**2) differences
+              return corelation
+          bestCorelation = minimum $ map abs corelations
+          indexPosition = elemIndex bestCorelation corelations

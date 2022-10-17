@@ -1,51 +1,54 @@
 
 -- Question 1
--- When you want to get the second element from a tuple you can use snd function.
--- If you have a list of tuples and would like the list of second element you can use
--- map snd functions. Write now a function that extract the third element from every
--- tuple element in a list of tuples. Do not use the map function.
+-- Check out some of the functions that are defined in the type classes stated in the
+-- section "Other important type classes" from lesson 7. What do they do?
 
-getThirdElements :: [(a, b, c)] -> [c]
-getThirdElements [] = []
-getThirdElements ((x1,x2,x3):xs) = x3 : getThirdElements xs
+-- For the Show type class the show function can represent objects as strings
+-- show :: Show a => a -> String
+
+-- For the Read type class the read function can represent strings as numbers
+-- read :: Read a => String -> a
+
+-- For the Enum type class the toEnum and fromEnum functions can convert user defined
+-- data types that implement Enum from an Int and to an Int.
+-- toEnum :: Enum a => Int -> a
+-- fromEnum :: Enum a => a -> Int
+
+-- For the Bounded type class the parameters maxBound and minBound give the highest
+-- and smallest possible value of a certain type.
+-- maxBound :: Int -- returns 9223372036854775807
+
+-- For the foldable type class the function foldl, foldr, minimum, maximum, lenght
+-- and sum are very useful. The last 4 are very intuitive.
+
+-- foldl (-) 1 [2..4]
+-- returns: 1 - 2 - 3 - 4 = -8
+-- foldr (-) 1 [2..4]
+-- returns: 2 - (3 - (4 - 1)) = 2
 
 -- Question 2
--- Write your own version of the functions map, sum and filter. Use pattern matching. 
+-- The types Int and Word bellong to the same type classes. What is the difference
+-- between them? Check maybe the maxBound and minBound parameter for both types.
 
-myMap :: (a -> b) -> [a] -> [b]
-myMap f [] = []
-myMap f (x:xs) = f x : myMap f xs
+-- maxBound :: Int -- returns 9223372036854775807
+-- maxBound :: Word -- returns 18446744073709551615
+-- minBound :: Int -- returns -9223372036854775808
+-- minBound :: Word -- returns 0
 
-mySum :: Num a => [a] -> a
-mySum [x] = x
-mySum (x:xs) = x + (mySum xs)
-
-myFilter :: (a -> Bool) -> [a] -> [a]
-myFilter f [] = []
-myFilter f (x:xs) = if f x then x : myFilter f xs
-                    else myFilter f xs
+-- The Word type has a 2 times higher maxBound and 0 for minBound which makes it as
+-- a usigned Int type. 
 
 -- Question 3
--- Write your own version of the functions foldl and foldr. 
+-- Add type signatures to the functions below and use type variables. Then uncomment 
+-- the functions and try to compile.
 
-myFoldL :: (a -> a -> a) -> a -> [a] -> a 
-myFoldL f start [] = start
-myFoldL f start xs = myFoldL f newStart $ tail xs
-  where newStart = f start $ head xs
+f1 :: (Show a, Fractional a) => a -> a -> [Char] -> [Char]
+f1 x y z = show (x/y) ++ z
 
-myFoldR :: (a -> a -> a) -> a -> [a] -> a
-myFoldR f start [x] = f x start 
-myFoldR f start xs = myFoldR f (f (last xs) start) $ init xs
+f2 :: (Fractional b, Read b, Enum b) => String -> b -> b -> b
+f2 x y z = foldl (/) (read x) [y..z]
 
--- Question 4
--- Write your own version of scanl and scanr functions. You can use pattern matching.
-
-myScanL :: (a -> a -> a) -> a -> [a] -> [a]
-myScanL f x [] = [x]
-myScanL f x [y] = [f x y]
-myScanL f x (y:ys) = x : myScanL f (f x y) (tail ys)
-
-myScanR :: (a -> a -> a) -> a -> [a] -> [a]
-myScanR f x ys = reverse $ myScanR' f x ys
-  where myScanR' f x [] = [x]
-        myScanR' f x ys = x : myScanR' f (f (last ys) x) (init ys)
+f3 :: (Bounded a, Enum a, Eq a) => a -> a
+f3 x = if x == maxBound
+          then minBound
+          else succ x
