@@ -1,20 +1,7 @@
-import System.Directory (createDirectory, removeDirectory, listDirectory)
-import Data.Time.Clock
 
 -- Question 1
--- Define an IO action that print the string "Hello World".
-
-
--- Question 2
--- Define an IO action that has as input a name from StdIn, and returns "Hello {NAME HERE}".
-
-
--- Question 3
--- Define an IO action that count the amount of files in the current directory.
-
-
--- Question 4
--- Define an IO action that calculates the time an other IO action takes. HINT: use getCurrentTime and diffUTCTime
--- from the module Data.Time.Clock
-
-
+-- Create a cabal project with an app/ folder that contains Main.hs and a lib/
+-- folder that contains Libraries.hs. In the Libraries.hs file specify a function
+-- that takes an integer and returns True if it is prime and False if it is not.
+-- Then in Main.hs let the program ask the user for a number and let him know
+-- wheather it is prime or not by using the module defined in Libraries.hs.

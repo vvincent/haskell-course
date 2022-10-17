@@ -1,31 +1,33 @@
 
--- This statement is a language pragma about which you will learn in lesson 12. We use it
--- here so we can have same function names in record syntax definitions of different types.
-{-# LANGUAGE DuplicateRecordFields #-}
-
 -- Question 1
--- Algebraic data types are types combined of other types. You have 2 choices for combining.
--- The first one is called product types where you combine types with a logical "and":
--- type Address = String
--- type Number = Int
--- data productType = Address Number
--- The second one is called sum types where you combine types with a logical "or":
--- type sumType = Descriptive Address | Numeric Number
+-- You have a list of names defined below. If you use the sort function on the list
+-- the elements are sorted by their first name. The function uses the compare function
+-- from the Ord type class. Try to implement the Ord type class for the FullName type 
+-- such that sort function will sort the elements regarding to their last name.
 
--- Below you have a data type defined and you want to add another data type to your code.
--- Solve the problem in 2 ways. First use only product types where you extract the common
--- parameters and define a new type that you then use for constructing both types. Second
--- use sum types to define the base common type. Try to solve the sum type in various ways.
+import Data.List (sort)
+newtype FullName = Name (String, String) deriving (Show, Eq)
 
-data Guitar = Guitar { brand :: String
-                     , price :: Float
-                     , color :: String }
+unsortedNames :: [FullName]
+unsortedNames = [Name ("Mark","Knopfler"),Name ("Jimmy","Page"),Name ("Brian","May")]
 
-data Drums = Drums { brand :: String
-                   , price :: Float
-                   , drumCount :: Int }
+-- sort unsortedNames -- without implementing the Ord type class for FullName type
+-- [("Brian","May"),("Jimmy","Page"),("Mark","Knopfler")]
 
 -- Question 2
--- Try to implement a data type that in its definition is refering to itself and make an
--- instace of it. And example of this is the linked list that you have saw in the lesson. 
--- Here is another way to define it: data List a = Empty | Cons a (List a) deriving Show 
+-- The Enum type class has the function toEnum and fromEnum that let you convert
+-- user defined types into Int and vice versa. For the type MyGrades below we
+-- derive Enum. Implement for this type the Eq and Ord type classes by using one
+-- of the Enum functions.
+
+data MyGrades = A | B | C deriving Enum
+
+-- Question 3
+-- Create the type "Position" that can have the values: Intern, Junior, Senior, Manager, Chief.
+-- Then create the type Experience that can have the values: Programming, Managing, Leading.
+-- Create a function that takes in two candidates that have a Experience value and years of experience 
+-- provided as an integer. And the function should returs the position apropriate for the candidate
+-- and also said which candidate has priority for employment (The higher Position gives higher
+-- priority and for same positions the years of experience can be compared). Test the function on a
+-- set of three candidates that have experience and years: Programming 7, Programming 8, Managing 5.
+

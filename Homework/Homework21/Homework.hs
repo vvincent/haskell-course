@@ -1,20 +1,15 @@
 
-
 -- Question 1
--- Write a function that takes in a dictionary of type Map String Int, where the first element 
--- is "count": n, and n represents the lenght of the Map. The function should run a Reader monad
--- that is parameterize by this Map and returns a bool, which says weather the count number in 
--- the map is representing the actual length of the Map. Use the asks and the ask functions.
+-- Rewrite the example from the lesson that uses the pass function, such that it 
+-- will use the censor function instead. Look at how the type signatures are chaning. 
 
 
 -- Question 2
--- Write a program that asks the user for his name and generater a HTML document that
--- displays a simple web-page with his name. Use the Reader monad. Below you can see 
--- an example of the HTML document for the user User1.
+-- Rewrite the example from the lesson that uses the listen function, such that it 
+-- will use the listens function instead.
 
--- <!DOCTYPE html>
--- <html lang="en">
---   <body>
---     <h1>Your site</h1><h3>Hello User1!</h3>
---   </body>
--- </html>
+
+-- Question 3
+-- Write a program that asks the user for 2 integers and then computes their greatest
+-- common divisor with Euclid’s algorithm. The programm should also write out the steps
+-- that the algorithm is performing. Use a Writer monad to acomplis this.
