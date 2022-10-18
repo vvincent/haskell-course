@@ -88,7 +88,7 @@ deliveryCost = 8.50
 beerCosts :: [(String, Double)] -> Double
 beerCosts order =
   foldr (+) deliveryCost
-  . zipWith (*) (map snd orderList) 
+  . zipWith (*) (map snd order) 
   . map snd 
   . filter (\name -> fst name `elem` map fst order) $
   bevogBeerPrices
