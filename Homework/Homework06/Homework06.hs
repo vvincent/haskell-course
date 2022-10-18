@@ -26,3 +26,40 @@
 -- zipWith (+) [1,2,3] [1,2,3]
 -- returns: [2,4,6]
 
+
+-- Question 5
+-- When you want to get the second element from a tuple you can use snd function.
+-- If you have a list of tuples and would like the list of second element you can use
+-- map snd functions. Write now a function that extract the third element from every
+-- tuple element in a list of tuples. Do not use the map function.
+
+
+-- Question 6
+-- Write your own version of foldr, scanl and scanr functions. You can use pattern matching.
+-- For the foldr function use such a recursive call: foldr f v xs = foldr ...
+
+
+-- Question 7
+-- Below you have defined some beer prices in bevogBeerPrices and your order list in
+-- orderList + the deliveryCost. Write a function that takes in an order and calculates
+-- the cost including delivery.
+
+bevogBeerPrices :: [(String, Double)]
+bevogBeerPrices =
+  [("Tak", 6.00)
+  ,("Kramah", 7.00)
+  ,("Ond", 8.50)
+  ,("Baja", 7.50)]
+
+orderList :: [(String, Int)]
+orderList = [("Tak", 5)
+            ,("Kramah", 4)
+            ,("Ond", 3)]
+
+deliveryCost :: Double
+deliveryCost = 8.50
+
+
+-- Question 8
+-- Write a function that takes in a integer and returns a list of all prime numbers
+-- that are smaller or equal to the input number. Use recursion, filter and map for it.
