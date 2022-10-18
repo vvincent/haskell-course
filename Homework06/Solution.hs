@@ -63,3 +63,79 @@ myZipWith f [] _ = []
 myZipWith f _ [] = []
 myZipWith f [x] [y] = [f x y]
 myZipWith f (x:xs) (y:ys) = f x y : myZipWith f xs ys
+
+-- Question 5
+-- When you want to get the second element from a tuple you can use snd function.
+-- If you have a list of tuples and would like the list of second element you can use
+-- map snd functions. Write now a function that extract the third element from every
+-- tuple element in a list of tuples. Do not use the map function.
+
+getThirdElements :: [(a, b, c)] -> [c]
+getThirdElements [] = []
+getThirdElements ((x1,x2,x3):xs) = x3 : getThirdElements xs
+
+-- Question 6
+-- Write your own version of foldr, scanl and scanr functions. You can use pattern matching.
+-- For the foldr function use such a recursive call: foldr f v xs = foldr ...
+
+myFoldr :: (a -> b -> b) -> b -> [a] -> b
+myFoldr _ v [] =  v 
+myFoldr f v xs = myFoldr f (f (last xs) v) $ init xs
+
+myScanL :: (a -> a -> a) -> a -> [a] -> [a]
+myScanL f x [] = [x]
+myScanL f x [y] = [f x y]
+myScanL f x (y:ys) = x : myScanL f (f x y) (tail ys)
+
+myScanR :: (a -> a -> a) -> a -> [a] -> [a]
+myScanR f x ys = reverse $ myScanR' f x ys
+  where myScanR' f x [] = [x]
+        myScanR' f x ys = x : myScanR' f (f (last ys) x) (init ys)
+
+-- Question 7
+-- Below you have defined some beer prices in bevogBeerPrices and your order list in
+-- orderList + the deliveryCost. Write a function that takes in an order and calculates
+-- the cost including delivery.
+
+bevogBeerPrices :: [(String, Double)]
+bevogBeerPrices =
+  [("Tak", 6.00)
+  ,("Kramah", 7.00)
+  ,("Ond", 8.50)
+  ,("Baja", 7.50)]
+
+orderList :: [(String, Int)]
+orderList = [("Tak", 5)
+            ,("Kramah", 4)
+            ,("Ond", 3)]
+
+deliveryCost :: Double
+deliveryCost = 8.50
+
+beerCosts :: [(String, Int)] -> Double
+beerCosts order =
+  foldr ((+) . snd) deliveryCost
+  . filter (\name -> fst name `elem` map fst order) $
+  bevogBeerPrices
+
+main1 :: IO ()
+main1 = do
+  print $ beerCosts orderList
+
+-- Question 8
+-- Write a function that takes in a integer and returns a list of all prime numbers
+-- that are smaller or equal to the input number. Use recursion, filter and map for it.
+
+primes :: Int -> [Int]
+primes n = if n < 2 then []
+           else getPrimes [2] 3
+  where getPrimes xs x
+            | last xs > n = init xs
+            | checkPrimality xs x = getPrimes (xs ++ [x]) (x + 1)
+            | otherwise = getPrimes xs (x + 1)
+        checkPrimality :: [Int] -> Int -> Bool
+        checkPrimality xs x = length (filter (== 0) (map (rem x) xs)) == 0
+
+main2 :: IO ()
+main2 = do
+  print $ primes 15
