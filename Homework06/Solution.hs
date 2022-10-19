@@ -64,7 +64,6 @@ zip' _as [] = []
 zip' (a : as) (b : bs) = (a, b) : zip' as bs
 
 -- Question 5
-
 -- Create a function called `zipWith'` that generalises `zip'` by zipping with a
 -- function given as the first argument, instead of a tupling function.
 --
