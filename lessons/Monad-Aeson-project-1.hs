@@ -1,14 +1,22 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
+import Control.Exception ( Exception, handle, throwIO )
+import Data.Typeable ( Typeable )
 import Data.Aeson ( decode, encode, FromJSON, ToJSON )
-import Data.ByteString.Lazy as B ( ByteString, length, readFile )
+import Data.ByteString.Lazy as B ( ByteString, length, readFile, putStrLn )
 import Data.ByteString.Lazy.Char8 as BC( ByteString, pack, unpack )
 import GHC.Generics ( Generic )
 import Data.Maybe ( isNothing, fromJust )
 import System.Directory ( doesFileExist, removeFile )
 import Data.Char ( isDigit )
+import Control.Monad ( forM_, when )
+
+-- Used for breaking out of a function when a condition is met
+data MyException = MyException deriving (Show, Typeable)
+instance Exception MyException
 
 type Player = String
 type Choice = String
@@ -74,10 +82,14 @@ playGame gs = do
                                 else [if ind /= choice then board !! (ind-1) else "O" | ind <- [1..9]])
                                 (nextPlayer player)
             printBoard newGameState
-            playGame newGameState
+            check <- checkResult newGameState
+            if check == "continue"
+            then playGame newGameState
+            else main
     else do
-        removeFile "./game_data"
-        Prelude.putStrLn "Game is over."
+        jsonData <- returnGameData
+        Prelude.putStrLn "Game is a draw."
+        when (B.length jsonData > 0) $ do removeFile "./game_data"
 
 getFreeFields :: GameState -> [Int]
 getFreeFields gs = [ind | ind <- [0..8], board !! ind == "Empty"]
@@ -128,4 +140,24 @@ printBoard gs = do
     Prelude.putStrLn "-----"
     mapM_ Prelude.putStr [printInd 6,"|", printInd 7,"|", printInd 8, "\n"]
 
-
+checkResult :: GameState -> IO String
+checkResult gs = handle (\ MyException -> return "finished") $ do
+    jsonData <- returnGameData
+    let board = currentBoard gs
+        xind = [ind | ind <- [1..9], board !! (ind -1) == "X"]
+        oind = [ind | ind <- [1..9], board !! (ind -1) == "O"]
+        winnerCombs = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]]
+    
+    forM_ winnerCombs $ \comb -> do
+        let xcheck = and [ind `elem` xind | ind <- comb]
+        let ocheck = and [ind `elem` oind | ind <- comb]
+        when xcheck $ do
+            Prelude.putStrLn "X player has won."
+            when (B.length jsonData > 0) $ do removeFile "./game_data"
+            throwIO MyException -- breaks out of the checkResult function
+        when ocheck $ do
+            Prelude.putStrLn "O player has won."
+            when (B.length jsonData > 0) $ do removeFile "./game_data"
+            throwIO MyException -- breaks out of the checkResult function
+    
+    return "continue"
