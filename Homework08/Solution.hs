@@ -3,11 +3,6 @@
 -- here so we can have same function names in record syntax definitions of different types.
 {-# LANGUAGE DuplicateRecordFields #-}
 
--- This language extension and import statement are used for handling ByteStrings about
--- which you will learn in lesson 12
-{-# LANGUAGE OverloadedStrings #-}
-import Data.ByteString (ByteString)
-
 -- Question 1
 -- Algebraic data types are types combined of other types. You have 2 choices for combining.
 
