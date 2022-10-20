@@ -1,42 +1,37 @@
 
 -- Question 1
--- You have a list of names defined below. If you use the sort function on the list
--- the elements are sorted by their first name. The function uses the compare function
--- from the Ord type class. Try to implement the Ord type class for the FullName type 
--- such that sort function will sort the elements regarding to their last name.
+-- Below you have a data type defined that holds a persons information. If you are deriving 
+-- the Ord class and use the sort function on the unsortedPersons list the persons are sorted 
+-- by their name from smallest to largest first letter. 
+-- Implement the Ord type class for the PersonData type such that sort function will sort the 
+-- persons regarding to their age from largest to smallest.
 
 import Data.List (sort)
-newtype FullName = Name (String, String) deriving (Show, Eq)
 
-unsortedNames :: [FullName]
-unsortedNames = [Name ("Mark","Knopfler"),Name ("Jimmy","Page"),Name ("Brian","May")]
+type Name = String
+type Age = Int
+type Height = Int
 
--- sort unsortedNames -- without implementing the Ord type class for FullName type
--- [("Brian","May"),("Jimmy","Page"),("Mark","Knopfler")]
+newtype PersonData = PersonData (Name, Age, Height) deriving (Show, Eq)
 
-instance Ord FullName where
-  compare (Name (first1, last1)) (Name (first2, last2)) = compare last1 last2
+unsortedPersons :: [PersonData]
+unsortedPersons = [ PersonData ("Mark", 65, 173)
+                  , PersonData ("Jimmy", 45, 182)
+                  , PersonData ("Brian", 55, 178)]
+
+-- sort unsortedPersons -- when deriving the Ord type class for PersonData type
+-- [PersonData ("Brian",55,178),PersonData ("Jimmy",45,182),PersonData ("Mark",65,173)]
+
+instance Ord PersonData where
+  compare (PersonData (name1, age1, height1)) (PersonData (name2, age2, height2)) = compare age2 age1
+
 
 -- Question 2
--- The Enum type class has the function toEnum and fromEnum that let you convert
--- user defined types into Int and vice versa. For the type MyGrades below we
--- derive Enum. Implement for this type the Eq and Ord type classes by using one
--- of the Enum functions.
-
-data MyGrades = A | B | C deriving Enum
-
-instance Eq MyGrades where
- (==) grade1 grade2 = fromEnum grade1 == fromEnum grade2
-
-instance Ord MyGrades where
- compare grade1 grade2 = compare (fromEnum grade1) (fromEnum grade2)
-
--- Question 3
 -- Create the type "Position" that can have the values: Intern, Junior, Senior, Manager, Chief.
 -- Then create the type Experience that can have the values: Programming, Managing, Leading.
 -- Create a function that takes in two candidates that have a Experience value and years of experience 
 -- provided as an integer. And the function should returs the position apropriate for the candidate
--- and also said which candidate has priority for employment (The higher Position gives higher
+-- and also say which candidate has priority for employment (The higher Position gives higher
 -- priority and for same positions the years of experience can be compared). Test the function on a
 -- set of three candidates that have experience and years: Programming 7, Programming 8, Managing 5.
 
