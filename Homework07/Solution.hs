@@ -3,10 +3,11 @@
 -- Check out some of the functions that are defined in the type classes stated in the
 -- section "Other important type classes" from lesson 7. What do they do?
 
--- For the Show type class the show function can represent objects as strings
+-- For the Show type class the show function can transform a variable to a string type
 -- show :: Show a => a -> String
 
--- For the Read type class the read function can represent strings as numbers
+-- For the Read type class the read function can transform a string to a number type 
+-- as Int, Float, Double or another type as e.g. Bool
 -- read :: Read a => String -> a
 
 -- For the Enum type class the toEnum and fromEnum functions can convert user defined
@@ -19,12 +20,7 @@
 -- maxBound :: Int -- returns 9223372036854775807
 
 -- For the foldable type class the function foldl, foldr, minimum, maximum, lenght
--- and sum are very useful. The last 4 are very intuitive.
-
--- foldl (-) 1 [2..4]
--- returns: 1 - 2 - 3 - 4 = -8
--- foldr (-) 1 [2..4]
--- returns: 2 - (3 - (4 - 1)) = 2
+-- and sum are very useful that we have covered in lesson 6.
 
 -- Question 2
 -- The types Int and Word bellong to the same type classes. What is the difference
@@ -39,16 +35,23 @@
 -- a usigned Int type. 
 
 -- Question 3
--- Add type signatures to the functions below and use type variables. Then uncomment 
--- the functions and try to compile.
+-- Add type signatures to the functions below and use type variables and type classes. 
+-- Then uncomment the functions and try to compile.
+
+import Data.Char ( isDigit )
 
 f1 :: (Show a, Fractional a) => a -> a -> [Char] -> [Char]
 f1 x y z = show (x/y) ++ z
 
-f2 :: (Fractional b, Read b, Enum b) => String -> b -> b -> b
-f2 x y z = foldl (/) (read x) [y..z]
+f2 :: (Show a, Fractional a, Read a, Enum a) => String -> a -> a -> String
+f2 x y z = if all isDigit x
+           then show $ foldl (/) (read x) [y..z]
+           else "Error: can not parse 1st parameter."
 
 f3 :: (Bounded a, Enum a, Eq a) => a -> a
 f3 x = if x == maxBound
-          then minBound
-          else succ x
+       then minBound
+       else succ x
+
+-- The f3 function compiles but when giving a number as an input you have to add the 
+-- type signature :: Int or :: Word to not get an "Ambiguous type variable" error.
