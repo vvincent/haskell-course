@@ -1,7 +1,3 @@
--- Warm up question.
--- Write a function called `null'` that checks if a lists is empty.
-
-
 -- Question 1
 -- Write a function called `repeat'` that takes a value and creates an infinite list with
 -- the value provided as every element of the list.
