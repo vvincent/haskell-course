@@ -22,6 +22,7 @@ updateArray myArray = runSTUArray $ do
 
 main :: IO ()
 main = do
+  putStrLn "Input a positive integer number:"
   n <- getLine
   print $ factorialArray $ read n
   print $ updateArray $ factorialArray $ read n
