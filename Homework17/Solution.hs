@@ -1,13 +1,12 @@
 
 import Text.Read (readMaybe) 
-import Control.Monad (forM_)
 
 -- Question 1
 -- For the Wrapper type from the previous lesson create also an instance of Applicative.
 -- Then create a function that asks the user to input two numbers, creates Wrapper types
 -- with them and summs them. Use the <*> operator and pure. In case one user input is not 
 -- a valid number the result should be the Empty data constructor of the Wrapper type. You
--- can use the readMaybe function that we import at the beginning.   
+-- can use the readMaybe function that we import at the beginning. 
 
 data Wrapper a = Empty | Wrapper a deriving Show
 
@@ -25,7 +24,9 @@ instance Applicative Wrapper where
 
 sumWrapperNums :: IO ()
 sumWrapperNums = do
+    putStrLn "Input first number:"
     n1 <- getLine
+    putStrLn "Input second number:"
     n2 <- getLine
 
     let maybeNum1 = readMaybe n1 :: Maybe Double 
@@ -56,18 +57,26 @@ uniqueCombinations func myList = length $ unique allCombinations
 operators :: Fractional a => [a -> a -> a]
 operators = [(+), (-), (*), (/)]
 
-printCombs1to5 :: IO ()
-printCombs1to5 = do
-    let list15 = [1..5]
-    forM_ operators $ \func -> do
-        print $ uniqueCombinations func list15
+printCombs1to5 :: Int -> IO ()
+printCombs1to5 ind = do
+    if ind < length operators
+    then do
+        let list15 = [1..5]
+            operator = operators !! ind
+        print $ uniqueCombinations operator list15
+        printCombs1to5 (ind + 1)
+    else 
+        putStrLn "Finished."
 
--- We briefly spoke about mapM_ in lesson 18. The forM_ function is same just with arguments fliped.
+main1 :: IO ()
+main1 = do
+    printCombs1to5 0
+
 -- The least combinations give the operators + and -, and this stays the same no matter the list.
 
 -- Question 3
 -- For the Cube type and data defined below we create a Show instance that prints possible combinations
--- of the numbers and their probabilites. Create a Nums Semigroup instance that combines e.g. the strings
+-- of the numbers and their probabilites. Create a Num Semigroup instance that combines e.g. the strings
 -- "1" and "2" to the string "1-2". Create a Semigroup and Monoid instance for Cube that combines all
 -- posible cube results for 2 cubes and their probabilities into a new Cube object. Then evalueate:
 -- cube1 <> cube2 and mconcat [cube1, cube1, cube1]. The result for cube1 <> cube2 should be:
