@@ -1,5 +1,4 @@
 
-import Control.Monad (forM)
 import Data.Maybe (fromJust)
 import Data.List (elemIndex)
 
@@ -36,19 +35,16 @@ ioExample' =
 -- How to compute a combination count for a list: e.g. the list [1,2] has 4 possible combinations which are: 
 -- (1,1) (1,2) (2,1) and (2,2). Do not use your knowledge of mathematics. Do it by computing all combination 
 -- pairs and counting them. If the user inputs a negative number return a Nothing value. In your code try to 
--- simulate a for loop with the funtion forM. 
+-- simulate a for loop with the funtion forM from the Control.Monad module. 
 
 -- Additional challange: Try to write your code in a single function and make it as short as possible.
 
-combinationCount :: Int -> Maybe [Int]
-combinationCount n = do
-    if n < 0 then Nothing else
-      let
-        allCombinations list = (\x y -> (x,y)) <$> list <*> list
-        combCountList = forM [1..n] $ \i -> do
-                          let combCount = length $ allCombinations [1..i]
-                          return combCount
-      in combCountList
+combinationCount :: Int -> [Int]
+combinationCount n =
+    if n < 0 then [] 
+    else [combForOne i | i <- [1..n]]
+  where allCombinations list = (\x y -> (x,y)) <$> list <*> list
+        combForOne x = length $ allCombinations [1..x]
 
 -- Question 3
 -- If you succesfully computed the function from the previous example you should get for n = 5 the list
@@ -56,8 +52,6 @@ combinationCount n = do
 -- fittingFunc defined below and finds the best exponent a from the input list of type [Double] that fits 
 -- the function f(x) = x**2. So for instance for [1.5, 1.6 .. 2.5] it should return 2.0. Your fitting 
 -- check should be done by calculating the mean squared error: (x - x1)^2 + ... + (x - xn)^2
-
--- Additional challange: Instead of using x**2 in your code use your solution function from Question 2.
 
 fittingFunc :: Double -> Double -> Double
 fittingFunc a x = x ** a
@@ -68,9 +62,13 @@ findExponent candicates = candicates !! fromJust indexPosition
               tmpExponent <- candicates
               let function = fittingFunc tmpExponent
                   fittingData = map function [1..10]
-                  actualData = map fromIntegral (fromJust $ combinationCount 10) :: [Double]
+                  actualData = map fromIntegral (combinationCount 10) :: [Double]
                   differences = zipWith (-) fittingData actualData
                   corelation = sum $ map (**2) differences
               return corelation
           bestCorelation = minimum $ map abs corelations
           indexPosition = elemIndex bestCorelation corelations
+
+main1 :: IO ()
+main1 = do
+    print $ findExponent [1.5,1.6..2.5]
