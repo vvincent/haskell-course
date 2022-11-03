@@ -10,7 +10,7 @@ import System.IO (writeFile)
 -- Write a function that takes in a dictionary of type Map String Int, where the first element 
 -- is "count": n, and n represents the lenght of the Map. The function should run a Reader monad
 -- that is parameterize by this Map and returns a bool, which says weather the count number in 
--- the map is representing the actual length of the Map. Use the asks and the ask functions.
+-- the map is representing the actual length of the Map. Try to use the ask and asks functions.
 
 type Dictionary = Map.Map String Int;
 
@@ -37,7 +37,7 @@ main1 = do
 -- Question 2
 -- Write a program that asks the user for his name and generater a HTML document that
 -- displays a simple web-page with his name. Use the Reader monad. Below you can see 
--- an example of the HTML document for the user User1.
+-- an example of the HTML document for the user name User1.
 
 -- <!DOCTYPE html>
 -- <html lang="en">
@@ -47,22 +47,22 @@ main1 = do
 -- </html>
 
 type Html = String
-type Email = String
+type Name = String
 
 main2 :: IO ()
 main2 = do
   putStrLn "Input your name:"
-  email <- getLine
-  case email of
+  name <- getLine
+  case name of
     "" -> do
       putStrLn "You must provide at least one character:"
     _ -> do
-      writeFile filePath . generateHtmlDocContent $ runReader page email
+      writeFile filePath . generateHtmlDocContent $ runReader page name
       putStrLn $ "Written HTML file to file \"" ++ filePath ++ "\"."
   where
     filePath = "mySite.html"
 
-page :: Reader Email Html
+page :: Reader Name Html
 page = do
   content' <- content
   return $ combine [topNav, content']
@@ -70,10 +70,10 @@ page = do
 topNav :: Html
 topNav = h1 ["Your site"]
 
-content :: Reader Email Html
+content :: Reader Name Html
 content = do
-  email <- ask
-  return $ h3 ["Hello " ++ email ++ "!"]
+  name <- ask
+  return $ h3 ["Hello " ++ name ++ "!"]
 
 combine :: [Html] -> Html
 combine = intercalate ""
