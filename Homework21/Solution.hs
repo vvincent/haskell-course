@@ -2,8 +2,9 @@
 import Control.Monad.Writer (censor, listens, runWriter, MonadWriter(tell), Writer)
 
 -- Question 1
--- Rewrite the example from the lesson that uses the pass function, such that it 
--- will use the censor function instead. Look at how the type signatures are chaning. 
+-- Rewrite the example from the lesson that sums the two ages and uses the pass function, 
+-- such that it will use the censor function instead. Notice how the type signatures of
+-- the function sumAge gets simplified. 
 
 logAge :: Int -> Writer [String] Int  
 logAge x = do
@@ -30,8 +31,8 @@ main1 = do
     mapM_ putStrLn messages
 
 -- Question 2
--- Rewrite the example from the lesson that uses the listen function, such that it 
--- will use the listens function instead.
+-- Rewrite the example from the lesson that uses the listen function, when reading the
+-- logs from the start function such that it will use the listens function instead.
 
 type Adding a = Writer [String] a
 
