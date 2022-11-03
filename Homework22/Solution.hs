@@ -1,130 +1,88 @@
 
 -- Question 1
--- Below is a version of the Tic-Tac-Toe game that does not use State and gets
--- the player choices from the user input instead of randomly generating the choices.
--- Re-write it such that you use the StateIO monad that we defined in the lesson.
+-- TODO
 
--- We present here only the solution and do not copy the original code from the homework.
-
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-} 
-
-import Control.Monad.Trans (MonadIO(..))
-import Control.Monad (ap, liftM)
-import Control.Monad.State (MonadState(get, put))
-
-newtype StateIO s a = StateIO {runStateIO :: s -> IO (a, s)}
-
-instance Functor (StateIO s) where
-    fmap = liftM
-
-instance Applicative (StateIO s) where
-    pure = return
-    (<*>) = ap
-
-instance Monad (StateIO s) where
-    return a = StateIO $ \s -> return (a, s)
-    n >>= k = StateIO $ \s -> do (a, s') <- runStateIO n s
-                                 runStateIO (k a) s'
-
-instance MonadIO (StateIO s) where
-    liftIO io = StateIO $ \st -> do x <- io
-                                    return (x, st)
-
-instance MonadState s (StateIO s) where
-    get = StateIO $ \st -> return (st,st)
-    put st = StateIO $ const $ return ((),st)
-
-data Player = XPlayer | OPlayer deriving (Eq, Show)
-
-data Choice = Empty | X | O
-  deriving (Show, Eq)
-
-type FieldIndex = Int
-
-data GameState = GameState
-  { currentBoard :: [Choice]
-  , currentPlayer :: Player
-  } deriving Show
+import Data.Map as Map
+import Control.Monad.State
+import Data.Maybe
+import Text.Read (readMaybe)
 
 main :: IO ()
 main = do
-    putStrLn "Board indexes are:"
-    mapM_ putStrLn ["1|2|3", "-----", "4|5|6", "-----", "7|8|9"]
-    let initState = GameState
-                      [Empty | boardInd <- [1..9]]
-                      XPlayer
-    playGame initState
+    putStrLn "Possible flowers are: daisy, sunflower and tulip."
+    putStrLn "Possible actions are:\n \
+            \ add  --flower --amount \n \
+            \ remove --flower --amout \n \
+            \ list_order \n"
 
-playGame :: GameState -> IO ()
-playGame gs = do
-    let player = currentPlayer gs
-    let board = currentBoard gs
+    let emptyBasket = Map.fromList [("daisy", 0),("sunflower",0),("tulip",0)]
+    shop emptyBasket
 
-    if player == XPlayer
-    then putStrLn "Player X make your choice:"
-    else putStrLn "Player O make your choice:"
+shop :: Map.Map String Int -> IO ()
+shop basket = do
+    putStrLn "What would you like to do:"
+    fullCommand <- getLine
 
-    (gameFinished, newGS) <- runStateIO resolveTurn gs
-    if gameFinished 
+    if Prelude.null fullCommand
     then do
-        printBoard newGS
-        putStrLn "Game finished."
-    else playGame newGS
-
-resolveTurn :: StateIO GameState Bool
-resolveTurn = do
-    gs <- get
-    let freeFields = getFreeFields gs
-    choice <- liftIO $ getChoice freeFields
-    applyMove choice
-    isGameDone
-
-getFreeFields :: GameState -> [Int]
-getFreeFields gs = [ind | ind <- [0..8], board !! ind == Empty]
-    where board = currentBoard gs
-
-getChoice :: [Int] -> IO Int
-getChoice freeFields = do
-    choice <- (read <$> getLine) :: IO Int
-    if (choice - 1) `elem` freeFields
-    then return choice
+        putStrLn "No command was given."
+        shop basket
     else do
-        putStrLn "This is not a valid choice. Try again:"
-        getChoice freeFields
+        let (command:options) = words fullCommand
+        case command of
+            "add" -> do
+                let (msg, (newBasket,_,_)) = runState updateOrder (basket, command, options)
+                putStrLn msg
+                shop newBasket
+            "remove" -> do
+                let (msg, (newBasket,_,_)) = runState updateOrder (basket, command, options)
+                putStrLn msg
+                shop newBasket
+            "list_order" -> do
+                print $ evalState updateOrder (basket, command, options)
+                shop basket
+            _ -> do
+                putStrLn "Not a valid command."
+                shop basket
 
-applyMove :: Int -> StateIO GameState ()
-applyMove choice = do
-  gs <- get
-  let player = currentPlayer gs
-      board = currentBoard gs
-      newBoard = if player == XPlayer
-                 then [if ind /= choice then board !! (ind-1) else X | ind <- [1..9]]
-                 else [if ind /= choice then board !! (ind-1) else O | ind <- [1..9]]
-  let newGS = gs { currentPlayer = nextPlayer player, currentBoard = newBoard }
-  liftIO $ printBoard newGS
-  put newGS
+updateOrder :: State (Map.Map String Int, String, [String]) String
+updateOrder = do
+    (basket, command, options) <- get
+    if command == "list_order"
+    then return $ describeBasket basket
+    else do
+        if length options /= 2
+        then return "Options for this command should equal to 2."
+        else do
+            let flower = options !! 0
+                amount = readMaybe (options !! 0) :: Maybe Int
+            if flower `notElem` ["daisy","sunflower","tulip"] || amount == Nothing
+            then return "The options for this command are not correct."
+            else do
+                case command of
+                    "add" -> do
+                        let updatedbasket = Map.insert flower (fromJust amount + 1) basket
+                        put (updatedbasket, command, options)
+                        return "Updated basket."
+                    "remove" -> do
+                        let changeAmount = fromJust amount
+                            currentAmount = fromJust $ Map.lookup flower basket
+                        if currentAmount - changeAmount < 0
+                        then do
+                            let updatedbasket = Map.insert flower 0 basket
+                            put (updatedbasket, command, options)
+                            return "Updated basket."
+                        else do
+                            let updatedbasket = Map.insert flower (fromJust amount - 1) basket
+                            put (updatedbasket, command, options)
+                            return "Updated basket."
+                    _ -> return "This case will anyway never happen"
 
-nextPlayer :: Player -> Player
-nextPlayer XPlayer = OPlayer
-nextPlayer OPlayer = XPlayer
-
-isGameDone :: StateIO GameState Bool
-isGameDone = do
-  gs <- get
-  let freeFields = getFreeFields gs
-  return $ length freeFields == 0
-
-printBoard :: GameState -> IO ()
-printBoard gs = do
-    let board = currentBoard gs
-    let stateToString st = case st of
-                             Empty -> "-"
-                             X -> "X"
-                             O -> "O"
-        printInd ind = stateToString $ board !! ind
-    mapM_ putStr [printInd 0,"|", printInd 1,"|", printInd 2, "\n"]
-    putStrLn "-----"
-    mapM_ putStr [printInd 3,"|", printInd 4,"|", printInd 5, "\n"]
-    putStrLn "-----"
-    mapM_ putStr [printInd 6,"|", printInd 7,"|", printInd 8, "\n"]
+describeBasket :: Map.Map String Int -> String
+describeBasket basket = "The basket contains " ++ 
+                        show daisy ++ " daisies, " ++
+                        show sunflower ++ " sunflowers and " ++
+                        show tulip ++ " tulips."
+  where daisy = fromJust $ Map.lookup "daisy" basket
+        sunflower = fromJust $ Map.lookup "sunflower" basket
+        tulip = fromJust $ Map.lookup "tulip" basket
