@@ -46,7 +46,23 @@ combinationCount n =
         combForOne x = length $ allCombinations [1..x]
 
 -- Question 3
--- If you succesfully computed the function from the previous example you should get for n = 5 the list
+-- Write a function that takes in a integer and returns a list of all prime numbers equal or smaller then
+-- the given number. If the integer is smaller then 2 return an empty list. Use list comprehension.
+
+primeNumbers :: Int -> [Int]
+primeNumbers n = if n < 2 then []
+                 else filterPrime [2..n]
+  where filterPrime [] = []
+        filterPrime (p:xs) = p : filterPrime [x | x <- xs, x `mod` p /= 0]
+
+main1 :: IO ()
+main1 = do
+  putStrLn "Input integer number:"
+  n <- (read <$> getLine) :: IO Int 
+  print $ primeNumbers n
+
+-- Question 4
+-- If you succesfully computed the function from Question 2 you should get for n = 5 the list
 -- [1,4,9,16,25] which clearly represents the function f(x) = x**2. Write now a function that uses the
 -- fittingFunc defined below and finds the best exponent a from the input list of type [Double] that fits 
 -- the function f(x) = x**2. So for instance for [1.5, 1.6 .. 2.5] it should return 2.0. Your fitting 
@@ -68,6 +84,6 @@ findExponent candicates = candicates !! fromJust indexPosition
           bestCorelation = minimum $ map abs corelations
           indexPosition = elemIndex bestCorelation corelations
 
-main1 :: IO ()
-main1 = do
+main2 :: IO ()
+main2 = do
     print $ findExponent [1.5,1.6..2.5]
