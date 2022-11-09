@@ -1,3 +1,4 @@
+
 {-# LANGUAGE DeriveGeneric #-} -- This pragma is for deriving JSON structures for custom types
 {-# LANGUAGE DeriveAnyClass #-} -- This pragma is for deriving JSON structures for custom types
 {-# LANGUAGE DuplicateRecordFields #-} -- This pragma is nessecary for question 5, which has duplicate fields in different record types.
@@ -41,18 +42,21 @@ decodedIndia = decode jsonIndia :: Maybe Country
 
 -- Question 3
 -- Add the correct instances that should be derived in the below data type for deriving JSON formats.
+-- Then encode the below example of a Tree to JSON and try to figure out how it is structured.
 
 data Tree = Leaf | LLeaf Tree | RLeaf Tree deriving (Show, Generic, ToJSON, FromJSON)
 
--- Question 4
--- Encode the below example of a Tree to JSON and try to figure out how it is structured.
-
+exampleLeaf :: Tree
 exampleLeaf = LLeaf $ RLeaf $ RLeaf $ LLeaf $ Leaf
 
+encodedExampleLeaf :: LBS.ByteString
 encodedExampleLeaf = encode exampleLeaf
 
+printTree :: IO ()
+printTree = print encodedExampleLeaf
+
 -- Question 4
--- With the below getUser function we can fetch some API that will serve us a user from a list of 10 users.
+-- With the below getUserFromAPI function we can fetch some API that will serve us a user from a list of 10 users.
 -- Write a Haskell data type that can convert this JSON representation of a user to a Haskell datatype
 
 {- The following is JSON structured and is the output of the API for user 4 out of the 10.
