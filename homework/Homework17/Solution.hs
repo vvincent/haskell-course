@@ -1,47 +1,5 @@
 
-import Text.Read (readMaybe) 
-
 -- Question 1
--- For the Wrapper type from the previous lesson create also an instance of Applicative.
--- Then create a function that asks the user to input two numbers, creates Wrapper types
--- with them and summs them. Use the <*> operator and pure. In case one user input is not 
--- a valid number the result should be the Empty data constructor of the Wrapper type. You
--- can use the readMaybe function that we import at the beginning. 
-
-data Wrapper a = Empty | Wrapper a deriving Show
-
-appWrapper :: Wrapper (a -> b) -> Wrapper a -> Wrapper b
-appWrapper f Empty = Empty
-appWrapper Empty x = Empty
-appWrapper (Wrapper f) (Wrapper n) = Wrapper (f n)
-
-instance Functor Wrapper where
-    fmap f val = (pure f) <*> val   
-
-instance Applicative Wrapper where
-    (<*>) = appWrapper
-    pure val = Wrapper val
-
-sumWrapperNums :: IO ()
-sumWrapperNums = do
-    putStrLn "Input first number:"
-    n1 <- getLine
-    putStrLn "Input second number:"
-    n2 <- getLine
-
-    let maybeNum1 = readMaybe n1 :: Maybe Double 
-    let maybeNum2 = readMaybe n2 :: Maybe Double 
-    
-    let w1 = createWrapper maybeNum1
-    let w2 = createWrapper maybeNum2
-    
-    print $ (+) <$> w1 <*> w2
-
-createWrapper :: Maybe Double -> Wrapper Double
-createWrapper Nothing = Empty
-createWrapper (Just n) = Wrapper n
-
--- Question 2
 -- Write a function that takes an aritmetic operator that has an instance of Fractional: +, -, *, / 
 -- and a list of type [Double] and then calulates the number of all possible computations where you 
 -- can take any of two elements from the list and uses the provided operator on them. For which of 
@@ -74,7 +32,7 @@ main1 = do
 
 -- The least combinations give the operators + and -, and this stays the same no matter the list.
 
--- Question 3
+-- Question 2
 -- For the Cube type and data defined below we create a Show instance that prints possible combinations
 -- of the numbers and their probabilites. Create a Num Semigroup instance that combines e.g. the strings
 -- "1" and "2" to the string "1-2". Create a Semigroup and Monoid instance for Cube that combines all
