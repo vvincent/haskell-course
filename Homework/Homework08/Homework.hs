@@ -1,7 +1,6 @@
 
 -- This statement is a language pragma about which you will learn in lesson 11. We use it
 -- here so we can have same function names in record syntax definitions of different types.
-{-# LANGUAGE DuplicateRecordFields #-}
 
 -- Question 1
 -- Algebraic data types are types combined of other types. You have 2 choices for combining.
