@@ -1,101 +1,84 @@
 
-{-
-Question 1
-Write a program for creating a shopping list, where the user can add 3 kinds of
-flowers. When the program is started it should display the following message:
-    Possible flowers are: daisy, sunflower and tulip.
-    Possible actions are:
-        add  --flower --amount 
-        remove --flower --amout 
-        show_list 
-If the user does not use a valid comamnd and appropriate options notify him about
-this. When the user says show_list print a message of how many of which flowers are
-added to the list. Use a state monad when coding the solution.
--}
+import Control.Monad.Writer (censor, listens, runWriter, MonadWriter(tell), Writer)
 
-import Data.Map as Map ( fromList, insert, lookup, Map )
-import Control.Monad.State ( evalState, runState, MonadState(put, get), State )
-import Data.Maybe ( fromJust )
-import Text.Read (readMaybe)
+-- Question 1
+-- Rewrite the example from the lesson that sums the two ages and uses the pass function, 
+-- such that it will use the censor function instead. Notice how the type signatures of
+-- the function sumAge gets simplified. 
 
-main :: IO ()
-main = do
-    putStrLn "Possible flowers are: daisy, sunflower and tulip."
-    putStrLn "Possible actions are:\n \
-            \ add  --flower --amount \n \
-            \ remove --flower --amout \n \
-            \ show_list \n"
+logAge :: Int -> Writer [String] Int  
+logAge x = do
+    tell ["Age is: " ++ show x]
+    return x            
+      
+sumAge :: Writer [String] Int
+sumAge = do  
+    a <- logAge 16  
+    b <- logAge 18
+    tell ["Summed age is: " ++ show (a + b)]
+    return (a + b)
 
-    let emptyBasket = Map.fromList [("daisy", 0),("sunflower",0),("tulip",0)]
-    shop emptyBasket
+process :: Writer [String] Int
+process = do
+    censor transform sumAge
 
-shop :: Map.Map String Int -> IO ()
-shop basket = do
-    putStrLn "What would you like to do:"
-    fullCommand <- getLine
+transform :: [String] -> [String]
+transform = map ("NOTE: " ++)
 
-    if Prelude.null fullCommand
-    then do
-        putStrLn "No command was given."
-        shop basket
-    else do
-        let (command:options) = words fullCommand
-        case command of
-            "add" -> do
-                let (msg, (newBasket,_,_)) = runState updateOrder (basket, command, options)
-                putStrLn msg
-                shop newBasket
-            "remove" -> do
-                let (msg, (newBasket,_,_)) = runState updateOrder (basket, command, options)
-                putStrLn msg
-                shop newBasket
-            "show_list" -> do
-                print $ evalState updateOrder (basket, command, options)
-                shop basket
-            _ -> do
-                putStrLn "Not a valid command."
-                shop basket
+main1 :: IO ()
+main1 = do
+    let (age, messages) = runWriter process
+    mapM_ putStrLn messages
 
-updateOrder :: State (Map.Map String Int, String, [String]) String
-updateOrder = do
-    (basket, command, options) <- get
-    if command == "show_list"
-    then return $ describeBasket basket
-    else do
-        if length options /= 2
-        then return "Options for this command should equal to 2."
-        else do
-            let flower = options !! 0
-                amount = readMaybe (options !! 1) :: Maybe Int
-            if flower `notElem` ["daisy","sunflower","tulip"] || amount == Nothing
-            then return "The options for this command are not correct."
-            else do
-                let changeAmount = fromJust amount
-                    currentAmount = fromJust $ Map.lookup flower basket
-                case command of
-                    "add" -> do
-                        let updatedbasket = Map.insert flower (changeAmount + currentAmount) basket
-                        put (updatedbasket, command, options)
-                        return "Updated basket."
-                    "remove" -> do
-                        let updatedAmount = currentAmount - changeAmount
-                        if updatedAmount < 0
-                        then do
-                            let updatedbasket = Map.insert flower 0 basket
-                            put (updatedbasket, command, options)
-                            return "Updated basket."
-                        else do
-                            let updatedbasket = Map.insert flower updatedAmount basket
-                            put (updatedbasket, command, options)
-                            return "Updated basket."
-                    _ -> return "This case will anyway never happen"
+-- Question 2
+-- Rewrite the example from the lesson that uses the listen function, when reading the
+-- logs from the start function such that it will use the listens function instead.
 
-describeBasket :: Map.Map String Int -> String
-describeBasket basket = "The shopping list contains " ++ 
-                        show daisy ++ " daisies, " ++
-                        show sunflower ++ " sunflowers and " ++
-                        show tulip ++ " tulips."
-  where daisy = fromJust $ Map.lookup "daisy" basket
-        sunflower = fromJust $ Map.lookup "sunflower" basket
-        tulip = fromJust $ Map.lookup "tulip" basket
-        
+type Adding a = Writer [String] a
+
+logMsg :: String -> Adding ()
+logMsg msg = tell [msg]
+
+add1 :: Int -> Adding Int
+add1 x = do
+    logMsg "Starting add1."
+    let y = x + 1
+    logMsg $ "Computed result: " ++ show y
+    return y
+
+start :: Int -> Adding Int
+start x = do
+    (n, logLines) <- listens length $ add1 x
+    logMsg $ "add1 logged " ++ show logLines ++ " lines"
+    return n
+
+main2 :: IO ()
+main2 = do
+    print "Input an integer number:"
+    n <- (read <$> getLine) :: IO Int
+    let (result, logs) = runWriter $ start n
+    print $ "Result is: " ++ show result
+    putStrLn "Logs are: "
+    mapM_ print logs
+
+-- Question 3
+-- Write a program that asks the user for 2 integers and then computes their greatest
+-- common divisor with Euclid’s algorithm. The programm should also write out the steps
+-- that the algorithm is performing. Use a Writer monad to acomplis this.
+
+myGCD :: Int -> Int -> Writer [String] Int  
+myGCD a b  
+    | b == 0 = do  
+        tell ["Greatest common divisor is: " ++ show a]
+        return a  
+    | otherwise = do  
+        tell [show a ++ " mod " ++ show b ++ " = " ++ show (a `mod` b)]
+        myGCD b (a `mod` b)
+
+main3 :: IO ()
+main3 = do
+    putStrLn "Input first number:"
+    n1 <- (read <$> getLine) :: IO Int
+    putStrLn "Input second number:"
+    n2 <- (read <$> getLine) :: IO Int
+    mapM_ putStrLn $ snd $ runWriter (myGCD n1 n2) 

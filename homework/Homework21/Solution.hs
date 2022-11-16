@@ -1,84 +1,96 @@
 
-import Control.Monad.Writer (censor, listens, runWriter, MonadWriter(tell), Writer)
+-- For question 1
+import Control.Monad.Reader (asks, runReader, MonadReader(ask), Reader)
+import qualified Data.Map as Map
+-- For question 2
+import Data.List (intercalate)
+import System.IO (writeFile)
 
 -- Question 1
--- Rewrite the example from the lesson that sums the two ages and uses the pass function, 
--- such that it will use the censor function instead. Notice how the type signatures of
--- the function sumAge gets simplified. 
+-- Write a function that takes in a dictionary of type Map String Int, where the first element 
+-- is "count": n, and n represents the lenght of the Map. The function should run a Reader monad
+-- that is parameterize by this Map and returns a bool, which says weather the count number in 
+-- the map is representing the actual length of the Map. Try to use the ask and asks functions.
 
-logAge :: Int -> Writer [String] Int  
-logAge x = do
-    tell ["Age is: " ++ show x]
-    return x            
-      
-sumAge :: Writer [String] Int
-sumAge = do  
-    a <- logAge 16  
-    b <- logAge 18
-    tell ["Summed age is: " ++ show (a + b)]
-    return (a + b)
+type Dictionary = Map.Map String Int;
 
-process :: Writer [String] Int
-process = do
-    censor transform sumAge
+checkMapCount :: Dictionary -> Bool
+checkMapCount = runReader checkDict
 
-transform :: [String] -> [String]
-transform = map ("NOTE: " ++)
+checkDict :: Reader Dictionary Bool
+checkDict = do
+    count <- asks (lookupMapVar "count")
+    dictionary <- ask
+    return (count == Map.size dictionary)
+
+lookupMapVar :: String -> Dictionary -> Int
+lookupMapVar name dictionary = maybe 0 id (Map.lookup name dictionary)
+
+dictionary1 :: Map.Map String Int
+dictionary1 = Map.fromList [("count",3), ("1",1), ("2",2)]
 
 main1 :: IO ()
 main1 = do
-    let (age, messages) = runWriter process
-    mapM_ putStrLn messages
+    putStr $ "Count for dictionary " ++ show (Map.toList dictionary1) ++ " is correct: "
+    print (checkMapCount dictionary1)
 
 -- Question 2
--- Rewrite the example from the lesson that uses the listen function, when reading the
--- logs from the start function such that it will use the listens function instead.
+-- Write a program that asks the user for his name and generater a HTML document that
+-- displays a simple web-page with his name. Use the Reader monad. Below you can see 
+-- an example of the HTML document for the user name User1.
 
-type Adding a = Writer [String] a
+-- <!DOCTYPE html>
+-- <html lang="en">
+--   <body>
+--     <h1>Your site</h1><h3>Hello User1!</h3>
+--   </body>
+-- </html>
 
-logMsg :: String -> Adding ()
-logMsg msg = tell [msg]
-
-add1 :: Int -> Adding Int
-add1 x = do
-    logMsg "Starting add1."
-    let y = x + 1
-    logMsg $ "Computed result: " ++ show y
-    return y
-
-start :: Int -> Adding Int
-start x = do
-    (n, logLines) <- listens length $ add1 x
-    logMsg $ "add1 logged " ++ show logLines ++ " lines"
-    return n
+type Html = String
+type Name = String
 
 main2 :: IO ()
 main2 = do
-    print "Input an integer number:"
-    n <- (read <$> getLine) :: IO Int
-    let (result, logs) = runWriter $ start n
-    print $ "Result is: " ++ show result
-    putStrLn "Logs are: "
-    mapM_ print logs
+  putStrLn "Input your name:"
+  name <- getLine
+  case name of
+    "" -> do
+      putStrLn "You must provide at least one character:"
+    _ -> do
+      writeFile filePath . generateHtmlDocContent $ runReader page name
+      putStrLn $ "Written HTML file to file \"" ++ filePath ++ "\"."
+  where
+    filePath = "mySite.html"
 
--- Question 3
--- Write a program that asks the user for 2 integers and then computes their greatest
--- common divisor with Euclid’s algorithm. The programm should also write out the steps
--- that the algorithm is performing. Use a Writer monad to acomplis this.
+page :: Reader Name Html
+page = do
+  content' <- content
+  return $ combine [topNav, content']
 
-myGCD :: Int -> Int -> Writer [String] Int  
-myGCD a b  
-    | b == 0 = do  
-        tell ["Greatest common divisor is: " ++ show a]
-        return a  
-    | otherwise = do  
-        tell [show a ++ " mod " ++ show b ++ " = " ++ show (a `mod` b)]
-        myGCD b (a `mod` b)
+topNav :: Html
+topNav = h1 ["Your site"]
 
-main3 :: IO ()
-main3 = do
-    putStrLn "Input first number:"
-    n1 <- (read <$> getLine) :: IO Int
-    putStrLn "Input second number:"
-    n2 <- (read <$> getLine) :: IO Int
-    mapM_ putStrLn $ snd $ runWriter (myGCD n1 n2) 
+content :: Reader Name Html
+content = do
+  name <- ask
+  return $ h3 ["Hello " ++ name ++ "!"]
+
+combine :: [Html] -> Html
+combine = intercalate ""
+
+h1 :: [Html] -> Html
+h1 children =
+  "<h1>" ++ combine children ++ "</h1>"
+
+h3 :: [Html] -> Html
+h3 children =
+  "<h3>" ++ combine children ++ "</h3>"
+
+generateHtmlDocContent :: Html -> Html
+generateHtmlDocContent html =
+  "<!DOCTYPE html>\n\
+    \<html lang=\"en\">\n\
+    \\t<body>\n"
+  ++ "\t\t" ++ html
+  ++ "\n\t</body>\n\
+    \</html>\n"
