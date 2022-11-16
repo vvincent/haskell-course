@@ -1,86 +1,64 @@
-
 -- Question 1
--- Take the book code exple from the lesson and write a function that asks the user to
--- input an index (1, 2 or 3) and returns the title of the book by using the <$> operator.
--- The code you need is defined below. If it can't get the title write a message.
+-- Define an instance of a semigroup that multiplies the even number data type EvenNr bellow
 
-import qualified Data.Map as Map
-import Data.Maybe (fromJust, isJust)
+data EvenNr = EvenNr Integer
 
-data Book = Book {
-    price :: Int , 
-    yearPublished :: Int ,
-    title :: String
-} deriving Show
-
-book1 = Book {
-    price = 15 ,
-    yearPublished = 1997 ,
-    title = "Harry Potter and the Philosopher's Stone"
-}
-
-book2 = Book {
-    price = 17 ,
-    yearPublished = 1998 ,
-    title = "Harry Potter and the Chamber of Secrets"
-}
-
-book3 = Book {
-    price = 19 ,
-    yearPublished = 1999 ,
-    title = "Harry Potter and the Prisoner of Azkaban"
-}
-
-books :: Map.Map Int Book
-books = Map.fromList $ zip [1..3] [book1, book2, book3]
-
-getTitle :: IO ()
-getTitle = do
-    putStrLn "Input an index:"
-    ind <- read <$> getLine
-    let book = Map.lookup ind books
-    let myTitle = title <$> book
-    if isJust myTitle then
-        putStrLn $ "The title is:\n" ++ fromJust myTitle
-    else putStrLn $ "Could not find the book with index: " ++ show ind
+instance Show EvenNr where
+        show (EvenNr n) = show (2*n) 
+		
+instance Semigroup EvenNr where
+        (<>) (EvenNr a) (EvenNr b) = EvenNr (a*b)
 
 -- Question 2
--- For the Wrapper example make an instance of Functor for the Wrapper type. Then write 
--- a function that asks the user to input a number (can be also decimal), creates a Wraper 
--- type from it with (<$) and prints the result of applying add1 to it. 
+-- Definan an instance of a semigroup that adds time for the Time data type bellow
 
-data Wrapper a = Empty | Wrapper a deriving Show
+newtype Hour = Hour Int deriving Show
+newtype Min = Min Int deriving Show
+newtype Sec = Sec Int deriving Show
+data Time = Time (Hour, Min ,Sec) deriving Show
 
-add1 :: Num a => a -> a
-add1 n = n + 1
+secToTime :: Sec -> Time
+secToTime (Sec x) = let h = (x `div` 3600) `mod` 24
+                        m = (x `mod` 3600) `div` 60
+                        s = x `mod` 60
+                  in Time (Hour h, Min m, Sec s)
 
-fmapWrapper :: (a -> b) -> Wrapper a -> Wrapper b
-fmapWrapper f Empty = Empty
-fmapWrapper f (Wrapper n) = Wrapper (f n)
+timeToSec :: Time -> Sec
+timeToSec (Time (Hour h, Min m, Sec s)) = Sec (h*3600+m*60+s)
 
-instance Functor Wrapper where
-    fmap = fmapWrapper
-
-createWrapper :: IO ()
-createWrapper = do
-    putStrLn "Input a number:"
-    n <- (read <$> getLine) :: IO Double
-    print $ add1 <$> (<$) n (Wrapper 0)
+instance Semigroup Time where
+        (<>) a b = let Sec n = timeToSec a
+                       Sec m = timeToSec b
+                   in secToTime (Sec (n + m)) 
 
 -- Question 3
--- Implement a linked list data type (a list that is build similar as Haskell lists are - 
--- with consing) and then define an Functor instance for this List data type. Then create
--- a list that has this type and apply the add1 function from the previous question to it.
+-- Is it possible to extend the semigroup instance of EvenNr above to a monoid?
+-- Does there exist another instance of a semigroup that makes the the collection of even numbers a monoid?
+-- If so, implement this semigroup and monoid.
 
-data List a = Null | Cons a (List a) deriving Show 
+{-
+No it is not possible to extend the above semigroup instnace to a monoid instance. The even mumbers with the above
+instance of <> has no idedentiy element. 
 
-instance Functor List where
-    fmap f Null = Null
-    fmap f (Cons x leftover) = Cons (f x) (fmap f leftover)
+It is possible to make the collection of even number a monoid with addition as its associative operator.
+-}
 
-myList :: List Int
-myList = Cons 1 (Cons 2 (Cons 3 Null))
+data EvenNr2 = EvenNr2 Integer
 
-add1ToListAndPrint :: IO ()
-add1ToListAndPrint = do
-    print $ add1 <$> myList
+instance Show EvenNr2 where
+        show (EvenNr2 n) = show (2*n)
+
+instance Semigroup EvenNr2 where
+        (<>) (EvenNr2 a) (EvenNr2 b) = EvenNr2 (a+b)
+
+instance Monoid EvenNr2 where
+        mempty = EvenNr2 0
+        mappend = (<>)
+
+
+-- Question 4
+-- Define an instance of a monoid for the Time data type.
+
+instance Monoid Time where
+        mempty = Time (Hour 0, Min 0, Sec 0)
+        mappend = (<>)

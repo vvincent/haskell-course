@@ -1,96 +1,89 @@
 
--- For question 1
-import Control.Monad.Reader (asks, runReader, MonadReader(ask), Reader)
-import qualified Data.Map as Map
--- For question 2
-import Data.List (intercalate)
-import System.IO (writeFile)
+import Data.Maybe (fromJust)
+import Data.List (elemIndex)
 
 -- Question 1
--- Write a function that takes in a dictionary of type Map String Int, where the first element 
--- is "count": n, and n represents the lenght of the Map. The function should run a Reader monad
--- that is parameterize by this Map and returns a bool, which says weather the count number in 
--- the map is representing the actual length of the Map. Try to use the ask and asks functions.
+-- Rewrite the following code below that used do-notation to equivalent code that does not use do-notation. 
 
-type Dictionary = Map.Map String Int;
+ioExample :: IO ()
+ioExample = do
+  print "Input number:"
+  string <- getLine
+  let n = read string
+      add1 x = x + 1
+  print (add1 n)
+  
+ioExample' :: IO () 
+ioExample' = 
+  print "Input number:" >>
+    getLine >>= 
+      (\string ->
+        return ((\n -> 
+                  (\add1 -> 
+                    (add1 n)
+                  ) (\x -> x + 1)
+                ) (read string)
+               )
+      ) >>= 
+      print
 
-checkMapCount :: Dictionary -> Bool
-checkMapCount = runReader checkDict
+-- Question 2
+-- Write a function that takes in n of type Int and returns a list of type [Int]. The elements of the list
+-- are combination counts for lists [1 .. x] where x goes from 1 to n. So the fisrt combination count is for
+-- the list [1], the second for the list [1,2] and the last for the list [1..n]. 
 
-checkDict :: Reader Dictionary Bool
-checkDict = do
-    count <- asks (lookupMapVar "count")
-    dictionary <- ask
-    return (count == Map.size dictionary)
+-- How to compute a combination count for a list: e.g. the list [1,2] has 4 possible combinations which are: 
+-- (1,1) (1,2) (2,1) and (2,2). Do not use your knowledge of mathematics. Do it by computing all combination 
+-- pairs and counting them. If the user inputs a negative number return an empty list.
 
-lookupMapVar :: String -> Dictionary -> Int
-lookupMapVar name dictionary = maybe 0 id (Map.lookup name dictionary)
+-- Additional challange: Try to write your code in a single function and make it as short as possible.
 
-dictionary1 :: Map.Map String Int
-dictionary1 = Map.fromList [("count",3), ("1",1), ("2",2)]
+combinationCount :: Int -> [Int]
+combinationCount n =
+    if n < 0 then [] 
+    else [combForOne i | i <- [1..n]]
+  where allCombinations list = (\x y -> (x,y)) <$> list <*> list
+        combForOne x = length $ allCombinations [1..x]
+
+-- Question 3
+-- Write a function that takes in a integer and returns a list of all prime numbers equal or smaller then
+-- the given number. If the integer is smaller then 2 return an empty list. Use list comprehension.
+
+primeNumbers :: Int -> [Int]
+primeNumbers n = if n < 2 then []
+                 else filterPrime [2..n]
+  where filterPrime [] = []
+        filterPrime (p:xs) = p : filterPrime [x | x <- xs, x `mod` p /= 0]
 
 main1 :: IO ()
 main1 = do
-    putStr $ "Count for dictionary " ++ show (Map.toList dictionary1) ++ " is correct: "
-    print (checkMapCount dictionary1)
+  putStrLn "Input integer number:"
+  n <- (read <$> getLine) :: IO Int 
+  print $ primeNumbers n
 
--- Question 2
--- Write a program that asks the user for his name and generater a HTML document that
--- displays a simple web-page with his name. Use the Reader monad. Below you can see 
--- an example of the HTML document for the user name User1.
+-- Question 4
+-- If you succesfully computed the function from Question 2 you should get for n = 5 the list
+-- [1,4,9,16,25] which clearly represents the function f(x) = x**2. Write now a function that uses the
+-- fittingFunc defined below and finds the best exponent a from the input list of type [Double] that fits 
+-- the function f(x) = x**2. So for instance for [1.5, 1.6 .. 2.5] it should return 2.0. Your fitting 
+-- check should be done by calculating the mean squared error: (x - x1)^2 + ... + (x - xn)^2
 
--- <!DOCTYPE html>
--- <html lang="en">
---   <body>
---     <h1>Your site</h1><h3>Hello User1!</h3>
---   </body>
--- </html>
+fittingFunc :: Double -> Double -> Double
+fittingFunc a x = x ** a
 
-type Html = String
-type Name = String
+findExponent :: [Double] -> Double
+findExponent candicates = candicates !! fromJust indexPosition
+    where corelations = do
+              tmpExponent <- candicates
+              let function = fittingFunc tmpExponent
+                  fittingData = map function [1..10]
+                  actualData = map fromIntegral (combinationCount 10) :: [Double]
+                  differences = zipWith (-) fittingData actualData
+                  corelation = sum $ map (**2) differences
+              return corelation
+          bestCorelation = minimum $ map abs corelations
+          indexPosition = elemIndex bestCorelation corelations
 
 main2 :: IO ()
 main2 = do
-  putStrLn "Input your name:"
-  name <- getLine
-  case name of
-    "" -> do
-      putStrLn "You must provide at least one character:"
-    _ -> do
-      writeFile filePath . generateHtmlDocContent $ runReader page name
-      putStrLn $ "Written HTML file to file \"" ++ filePath ++ "\"."
-  where
-    filePath = "mySite.html"
-
-page :: Reader Name Html
-page = do
-  content' <- content
-  return $ combine [topNav, content']
-
-topNav :: Html
-topNav = h1 ["Your site"]
-
-content :: Reader Name Html
-content = do
-  name <- ask
-  return $ h3 ["Hello " ++ name ++ "!"]
-
-combine :: [Html] -> Html
-combine = intercalate ""
-
-h1 :: [Html] -> Html
-h1 children =
-  "<h1>" ++ combine children ++ "</h1>"
-
-h3 :: [Html] -> Html
-h3 children =
-  "<h3>" ++ combine children ++ "</h3>"
-
-generateHtmlDocContent :: Html -> Html
-generateHtmlDocContent html =
-  "<!DOCTYPE html>\n\
-    \<html lang=\"en\">\n\
-    \\t<body>\n"
-  ++ "\t\t" ++ html
-  ++ "\n\t</body>\n\
-    \</html>\n"
+    print $ findExponent [1.5,1.6..2.5]
