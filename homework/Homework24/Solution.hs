@@ -29,9 +29,9 @@ data GameState = GameState
 
 main :: IO ()
 main = do
-    Prelude.putStrLn "Starting new game."
-    Prelude.putStrLn "Board indexes are:"
-    mapM_ Prelude.putStrLn ["1|2|3", "-----", "4|5|6", "-----", "7|8|9"]
+    putStrLn "Starting new game."
+    putStrLn "Board indexes are:"
+    mapM_ putStrLn ["1|2|3", "-----", "4|5|6", "-----", "7|8|9"]
     let initState = GameState
                     ["Empty" | boardInd <- [1..9]]
                     "XPlayer"
@@ -43,15 +43,15 @@ playGame gs = do
         board = currentBoard gs
         freeFields = getFreeFields gs
 
-    if Prelude.length freeFields /= 0
+    if length freeFields /= 0
     then do
         if player == "XPlayer"
-        then Prelude.putStrLn "Player X make your choice:"
-        else Prelude.putStrLn "Player O make your choice:"
+        then putStrLn "Player X make your choice:"
+        else putStrLn "Player O make your choice:"
 
         choice <- getCommand gs freeFields
         if choice == -999
-        then Prelude.putStrLn "Quiting game."
+        then putStrLn "Quiting game."
         else do
             let newGameState = GameState
                                 (if player == "XPlayer"
@@ -64,7 +64,7 @@ playGame gs = do
             then playGame newGameState
             else main
     else do
-        Prelude.putStrLn "Game is a draw."
+        putStrLn "Game is a draw."
 
 getFreeFields :: GameState -> [Int]
 getFreeFields gs = [ind | ind <- [0..8], board !! ind == "Empty"]
@@ -73,19 +73,19 @@ getFreeFields gs = [ind | ind <- [0..8], board !! ind == "Empty"]
 getCommand :: GameState -> [Int] -> IO Int
 getCommand gs freeFields = do
     command <- getLine
-    if Prelude.all isDigit command
+    if all isDigit command
     then getChoice gs command freeFields
     else do
-        Prelude.putStrLn "This is not a valid command. Try again:"
+        putStrLn "This is not a valid command. Try again:"
         getCommand gs freeFields
 
 getChoice :: GameState -> String -> [Int] -> IO Int
 getChoice gs command freeFields = do
     let choice = read command :: Int
-    if (choice - 1) `Prelude.elem` freeFields
+    if (choice - 1) `elem` freeFields
     then return choice
     else do
-        Prelude.putStrLn "This is not a free field. Try again:"
+        putStrLn "This is not a free field. Try again:"
         getCommand gs freeFields
 
 nextPlayer :: Player -> Player
@@ -101,11 +101,11 @@ printBoard gs = do
                              "O" -> "O"
                              _ -> "-"
         printInd ind = stateToString $ board !! ind
-    mapM_ Prelude.putStr [printInd 0,"|", printInd 1,"|", printInd 2, "\n"]
-    Prelude.putStrLn "-----"
-    mapM_ Prelude.putStr [printInd 3,"|", printInd 4,"|", printInd 5, "\n"]
-    Prelude.putStrLn "-----"
-    mapM_ Prelude.putStr [printInd 6,"|", printInd 7,"|", printInd 8, "\n"]
+    mapM_ putStr [printInd 0,"|", printInd 1,"|", printInd 2, "\n"]
+    putStrLn "-----"
+    mapM_ putStr [printInd 3,"|", printInd 4,"|", printInd 5, "\n"]
+    putStrLn "-----"
+    mapM_ putStr [printInd 6,"|", printInd 7,"|", printInd 8, "\n"]
 
 checkResult :: GameState -> IO String
 checkResult gs = handle (\ MyException -> return "finished") $ do
@@ -118,10 +118,10 @@ checkResult gs = handle (\ MyException -> return "finished") $ do
         let xcheck = and [ind `elem` xind | ind <- comb]
         let ocheck = and [ind `elem` oind | ind <- comb]
         when xcheck $ do
-            Prelude.putStrLn "X player has won."
+            putStrLn "X player has won."
             throwIO MyException 
         when ocheck $ do
-            Prelude.putStrLn "O player has won."
+            putStrLn "O player has won."
             throwIO MyException 
     
     return "continue"
