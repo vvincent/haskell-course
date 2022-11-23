@@ -1,13 +1,12 @@
+
 module Libraries (isPrime) where
 
 primeNumbers :: Int -> [Int]
-primeNumbers n = getPrimes [2] 3
-  where getPrimes xs x
-            | last xs > n = init xs
-            | checkPrimality xs x = getPrimes (xs ++ [x]) (x + 1)
-            | otherwise = getPrimes xs (x + 1)
-        checkPrimality :: [Int] -> Int -> Bool
-        checkPrimality xs x = length (filter (== 0) (map (rem x) xs)) == 0
+primeNumbers n = getPrimes [2..]
+  where getPrimes list@(x:xs) = if x > n 
+                                then [] 
+                                else filterPrimes list
+        filterPrimes (x:xs) = x : getPrimes (filter ((/= 0) . (`mod` x)) xs)
 
 isPrime :: Int -> Bool
 isPrime n = n `elem` primeNumbers n
