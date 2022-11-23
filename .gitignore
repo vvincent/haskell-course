@@ -26,6 +26,9 @@ cabal.project.local~
 .ipynb_checkpoints
 lab/.ipynb_checkpoints
 
+# VSCode Settings
+.vscode/
+
 
 # Custom
 scripts
