@@ -38,11 +38,35 @@ person1' = updatePerson (++ " 1 year older") (+1) person1
 -- print person1' -- returns Triple {first = "Charles Hoskinson 1 year older", second = 36, third = Male}
 
 -- Question 2
--- labyrinth task 1
+-- Create a labyrinth data type that can have the coices left turn, right turn, split or finish. The
+-- left and right turn continue the labyrinth in one direction, the split continues it in two directions
+-- and finish does not continue the labyrinth. Create also a variable of this type.
 
+data Labyrinth = LeftTurn Labyrinth | RightTurn Labyrinth | Split Labyrinth Labyrinth | Finish
+
+labyrinth1 :: Labyrinth
+labyrinth1 = Split 
+               (LeftTurn 
+                 (Split 
+                   (RightTurn Finish) 
+                   (LeftTurn 
+                     (LeftTurn Finish)
+                   )
+                 )
+               ) 
+               (RightTurn 
+                 (Split 
+                   Finish 
+                   (LeftTurn 
+                     (RightTurn Finish)
+                   )
+                 )
+               )
 
 -- Question 3
--- labyrinth task 2
+-- For the previous data type write two functions that take in a labyrinth variable and return the
+-- smallest and largest number of possible choices to finish the labyrinth. 
+
 
 
 -- Question 4
