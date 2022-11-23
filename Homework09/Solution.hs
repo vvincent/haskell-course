@@ -1,19 +1,16 @@
 
 -- Question 1
--- Define a data type parameterized by 3 different types. Then define helper functions
--- that extract the first, second and third type, convert the initial data to a triple 
--- and apply three functions, each to one of the data contained in the parameterized type. 
+-- Define a data type parameterized by 3 different types. Then define a helper function
+-- that converts the initial data to a Haskell triple and a function that applies three 
+-- functions, each to one of the data contained in the parameterized type.
+-- Create also a variable of this type that holds the name, age and sex of a person.
+-- Then write a function that takes this variable, increases the age for 1 and appends
+-- a message to the name of the person that he is 1 year older. 
 
-data Triple a b c = Triple a b c deriving Show
-
-first :: Triple a b c -> a
-first (Triple x1 x2 x3) = x1 
-
-second :: Triple a b c -> b
-second (Triple x1 x2 x3) = x2
-
-third :: Triple a b c -> c
-third (Triple x1 x2 x3) = x3
+data Triple a b c = Triple 
+                      { first :: a
+                      , second :: b
+                      , third :: c} deriving Show
 
 toHaskellTriple :: Triple a b c -> (a,b,c)
 toHaskellTriple (Triple x1 x2 x3) = (x1,x2,x3)
@@ -22,66 +19,68 @@ applyFunctions :: (a1 -> a2) -> (b1 -> b2) -> (c1 -> c2) ->
                   Triple a1 b1 c1 -> Triple a2 b2 c2
 applyFunctions f1 f2 f3 (Triple x1 x2 x3) = Triple (f1 x1) (f2 x2) (f3 x3)
 
--- Question 2
--- Create a recursive data type that resembles a tree structure. The tree can have
--- either a branch that splits in two directions, either a left or right branch that
--- splits in one direction or either just a leaf. 
+type Name = String
+type Age = Int
+data Sex = Male | Female deriving Show
 
-data Tree = Leaf | Branch Tree Tree | RightBranch Tree | LeftBranch Tree deriving Show
+person1 :: Triple Name Age Sex
+person1 = Triple "Charles Hoskinson" 35 Male
+
+personTriple :: (Name, Age, Sex)
+personTriple = toHaskellTriple person1
+
+updatePerson :: (String -> String) -> (Int -> Int) -> Triple Name Age Sex -> Triple Name Age Sex
+updatePerson f1 f2 = applyFunctions f1 f2 id
+
+person1' :: Triple Name Age Sex
+person1' = updatePerson (++ " 1 year older") (+1) person1
+
+-- print person1' -- returns Triple {first = "Charles Hoskinson 1 year older", second = 36, third = Male}
+
+-- Question 2
+-- labyrinth task 1
+
 
 -- Question 3
--- Define an variable of the tree type from question 2 and a function that counts
--- the numbers of leafs in a given tree variable type. You can help yourself by 
--- deriving Show for the data type in the previous question.
+-- labyrinth task 2
 
-tree1 :: Tree
-tree1 = Branch (Branch (RightBranch Leaf) Leaf) (LeftBranch (Branch Leaf Leaf))
-
-countLeafs :: Tree -> Int
-countLeafs tree = length $ filter (("Leaf" ==) . removeBrackets) treeParts
-    where treeParts = words $ show tree
-          removeBrackets xs = [ x | x <- xs, x `notElem` "()"]
-
-main1 :: IO ()
-main1 = print $ countLeafs tree1
 
 -- Question 4
--- Now create a tree type same as before just that it is parameterized with a, where 
--- a represents the type of data that leafs in addition hold. Then create an instance
--- of a tree prameterized with a data type that can either contain a String or Int.
--- If a leaf is parameterized by a String the string should only contain Int numbers. 
+-- Create a tree type that it is parameterized with a. The tree can have a leaf, a 
+-- double branch that splits in two tree directions or a triple branch that splits in
+-- three tree directions. The leaf data constructor is parameterized by a. Then create 
+-- an instance of this tree type prameterized by a color type that can hold 3 colors.  
 
-data Numbers = Written String | Actual Int
+data Color = Green | Brown | Yellow deriving Eq
+-- the Eq type class is derived because it is needed for the code in the next question.
 
-data TreeData a = LeafData a | BranchData (TreeData a) (TreeData a) | 
-                  RightBranchData (TreeData a) | LeftBranchData (TreeData a)
+data Tree a = Leaf a | DoubleBranch (Tree a) (Tree a) | 
+              TripleBranch (Tree a) (Tree a) (Tree a) 
 
-tree2 :: TreeData Numbers
-tree2 = BranchData 
-          (BranchData 
-            (RightBranchData 
-              (LeafData (Written "1")) 
-            )
-            (LeafData (Actual 2))
+tree :: Tree Color
+tree = DoubleBranch 
+          (TripleBranch 
+            (Leaf Brown)
+            (Leaf Green)
+            (Leaf Brown)
           )
-          (LeftBranchData 
-            (BranchData 
-              (LeafData (Actual 3)) 
-              (LeafData (Written "4"))
-            )
+          (DoubleBranch 
+            (Leaf Yellow)
+            (Leaf Green)
           )
 
 -- Question 5
--- Write a function that sums the numbers contained in the leafs that are parameterized
--- by an actual Int. Use it on the variable from the previous question. The data types
--- in the previous question should not derive or implement an instance from Show.
+-- Write a function that sums the numbers of leafs of a certain color which you can
+-- define as a Haskell variable. Use the code from the previous question.
 
-countIntLeafs :: TreeData Numbers -> Int
-countIntLeafs (LeafData (Written str)) = 0
-countIntLeafs (LeafData (Actual num)) = num
-countIntLeafs (BranchData treeA treeB) = countIntLeafs treeA + countIntLeafs treeB
-countIntLeafs (RightBranchData treeA) = countIntLeafs treeA
-countIntLeafs (LeftBranchData treeA) = countIntLeafs treeA
+seekedColor :: Color
+seekedColor = Green
 
-main2 :: IO ()
-main2 = print $ countIntLeafs tree2
+countColor :: Tree Color -> Int
+countColor (Leaf color) = if color == seekedColor
+                          then 1
+                          else 0
+countColor (DoubleBranch treeA treeB) = countColor treeA + countColor treeB
+countColor (TripleBranch treeA treeB treeC) = countColor treeA + countColor treeB + countColor treeC
+
+-- countColor tree -- returns 2
