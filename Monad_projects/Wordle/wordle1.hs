@@ -1,4 +1,15 @@
 
+{- Wordle game
+
+A player has to guess the name of an animal. He is beeing told how many
+characters the name contains. For every guess colors shown for each letter
+indicate if the letter is correct (green), if it exist in another place (yellow) 
+or if it does not exist at all (white). 
+  
+The player has 6 attempts to guess the word. After that a new word is randomly
+chosen from the animals.txt file contained in the same folder.
+-}
+
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -15,11 +26,15 @@ import Text.Printf (printf)
 import Control.Monad (join)
 import System.Random (mkStdGen, Random(randomR), StdGen)
 
+-- List of animals for the game
 type Animals = [T.Text]
+-- Generator for the random function
 type Generator = StdGen
 
+-- Possible states for a letter guess
 data State = Fail | Success | Misplace
 
+-- Main function that starts the game
 main :: IO ()
 main = do
     let filename = "animals.txt"
@@ -38,29 +53,32 @@ main = do
                "If you provide to much characters the surplus will be discarted."
     startGame animals gen
 
+-- Randomaly picks a word, starts the game and then repeats.
 startGame :: Animals -> Generator -> IO ()
 startGame animals gen = do
   let (selected_index, gen') = randomR (0, length animals - 1) gen
       selected_word = animals !! selected_index
   
-  -- For debugging:
-  -- putStrLn $ "The solution is: "
-  -- print selected_word
   putStrLn $ "The lenght of the word is: " ++ show (T.length selected_word)
 
   wordles <- play selected_word
   TIO.putStrLn . T.unlines . reverse $ wordles
   startGame animals gen'
 
+-- Shows a color indicator for a given state
 cshow :: State -> Char
 cshow = \case
   Fail -> '⬜'
   Success -> '🟩'
   Misplace -> '🟨'
 
+-- Number of attemps a user has to guess a word
 attempts :: Int
 attempts = 6
 
+-- Processes one turn of a game. Takes in the seeked word,
+-- asks the user for a guess and prints back the colored text
+-- that gives the user informations about his guess. 
 play :: Text -> IO [Text]
 play selected_word = go attempts []
   where
@@ -71,14 +89,15 @@ play selected_word = go attempts []
 
       putStrLn $ "Please enter your animal " ++ show i ++ "/" ++ show attempts ++ ": "
 
+      -- Gets input from the user and processes it
       attemptstr <- getLine
       let attemp = toLower . strip $ pack attemptstr
       let (wordle, correct) = getWordle attemp selected_word
 
       printf "Current attempt: %d/%d\n\n" i attempts
-
       TIO.putStrLn wordle
 
+      -- Checks if the game is finished. If not it moves to the next step.
       if correct
         then do
           putStrLn "Congratulation!"
@@ -87,6 +106,8 @@ play selected_word = go attempts []
         else do
           go (n - 1) (wordle : xs)
 
+-- Takes in the actual and guessed word. Retuns a tuple where the first
+-- element is the colored text and the second tells if the guess was correct.
 getWordle :: Text -> Text -> (Text, Bool)
 getWordle attempt correct =
   let result = T.zipWith go attempt correct
