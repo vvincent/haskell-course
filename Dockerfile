@@ -32,4 +32,4 @@ COPY . ${HOME}
 RUN chown -R ${NB_UID} ${HOME}
 USER ${NB_USER}
 
-RUN stack install Decimal http-conduit
+RUN stack install Decimal http-conduit ansi-terminal
