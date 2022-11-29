@@ -1,7 +1,12 @@
+
 module Libraries (isPrime) where
 
+primeNumbers :: Int -> [Int]
+primeNumbers n = getPrimes [2..]
+  where getPrimes list@(x:xs) = if x > n 
+                                then [] 
+                                else filterPrimes list
+        filterPrimes (x:xs) = x : getPrimes (filter ((/= 0) . (`mod` x)) xs)
+
 isPrime :: Int -> Bool
-isPrime n = n `elem` take n primes
-  where primes = filterPrime [2..]
-        filterPrime [] = []
-        filterPrime (p:xs) = p : filterPrime [x | x <- xs, x `mod` p /= 0]
+isPrime n = n `elem` primeNumbers n
