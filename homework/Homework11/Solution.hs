@@ -70,16 +70,16 @@ printDirectoryTree = do
 returnStructure :: FilePath -> IO [IO DirectoryStructure]
 returnStructure filePath = do
     contents <- listDirectory filePath
-    if null contents 
-    then return []
-    else return $ flip map contents $ \fileName -> do
-                        let newFilePath = filePath ++ "/" ++ fileName
-                        isFile <- doesFileExist newFilePath
-                        if isFile
-                        then return $ File fileName
-                        else do 
+    return $ map go contents
+    where
+      go fileName = do 
+                       let newFilePath = filePath ++ "/" ++ fileName
+                       isFile <- doesFileExist newFilePath
+                       if isFile
+                       then return $ File fileName
+                       else do 
                             structure <- returnStructure newFilePath
-                            return $ Folder fileName structure  
+                            return $ Folder fileName structure 
 
 printStructure :: [IO DirectoryStructure] -> Int -> IO ()
 printStructure [] _ = return ()
