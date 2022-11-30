@@ -38,7 +38,8 @@ createMsg = do
     fileContent <- readFile "./msg.txt"
     putStrLn $ "File content is: " ++ fileContent
 
-{- Question 4
+{- Question 4: Advanced example for students aiming at Plutus.
+
 Write a program that prints the directory tree structure from the current
 folder. Below you can see an example output how such a structure looks like.  
 .
