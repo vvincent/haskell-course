@@ -5,7 +5,7 @@ data EvenNr = EvenNr Integer
 
 instance Show EvenNr where
         show (EvenNr n) = show (2*n) 
-		
+
 instance Semigroup EvenNr where
         (<>) (EvenNr a) (EvenNr b) = EvenNr (a*b)
 
