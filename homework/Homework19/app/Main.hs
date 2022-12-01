@@ -129,7 +129,7 @@ getUserAsData n = do bs <- getUserFromAPI n
                      return user
 
 -- Question 5
--- Replace this main function to get an user number between [1..10] and return return the parsed User from the api.
+-- Create a main function that asks the user for a number between [1..10] and returns the parsed User from the api.
 
 main :: IO ()
 main = do Prelude.putStrLn "Enter a number from [1..10]"
