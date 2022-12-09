@@ -1,6 +1,90 @@
 
+import System.Random (mkStdGen, Random(randomR), StdGen)
+import Data.Map as Map ( fromList, insert, lookup, Map )
+import Control.Monad.State ( evalState, runState, MonadState(put, get), State )
+import Data.Maybe ( fromJust )
+import Text.Read (readMaybe)
+
 {-
 Question 1
+Write a program that simulates the Tic-Tac-Toe game https://en.wikipedia.org/wiki/Tic-tac-toe. 
+Instead of two players playing against each other use the System.Random module to randomly 
+pick the X and O choices. You do not have to check if any of the players has won the game.
+Simply print the board results at the end of the game. Use a State monad to implement the code.
+
+Developer comment (remove after review):
+The case when 2 actual players play against each other and check who has won will be a homework
+in the next lesson, because you can nicely code this with help of monadic functions.
+-}
+
+data Player = XPlayer | OPlayer deriving Eq
+data Choice = Empty | X | O deriving Eq
+
+data GameState = GameState
+  { currentBoard :: [Choice]
+  , currentPlayer :: Player
+  , generator :: StdGen
+  }
+
+main1 :: IO ()
+main1 = do
+    putStrLn "Game results:"
+    let gen = mkStdGen 1
+        initState = GameState
+                      [Empty | boardInd <- [1..9]]
+                      XPlayer
+                      gen
+    playGame initState
+    
+playGame :: GameState -> IO ()
+playGame gs = do
+    let freeFields = getFreeFields gs
+    if length freeFields /= 0
+    then do
+        let player = currentPlayer gs
+            board = currentBoard gs
+            gen = generator gs
+            (choiceInd, gen') = randomR (0, length freeFields - 1) gen
+            choice = (freeFields !! choiceInd) + 1
+            newGameState = GameState
+                            (if player == XPlayer
+                            then [if ind /= choice then board !! (ind-1) else X | ind <- [1..9]]
+                            else [if ind /= choice then board !! (ind-1) else O | ind <- [1..9]])
+                            (nextPlayer player)
+                            gen'
+        playGame newGameState
+    else do
+        printBoard gs
+
+getFreeFields :: GameState -> [Int]
+getFreeFields gs = [ind | ind <- [0..8], board !! ind == Empty]
+    where board = currentBoard gs
+
+nextPlayer :: Player -> Player
+nextPlayer XPlayer = OPlayer
+nextPlayer OPlayer = XPlayer
+
+printBoard :: GameState -> IO ()
+printBoard gs = do
+    let board = currentBoard gs
+    let stateToString st = case st of
+                             Empty -> "-"
+                             X -> "X"
+                             O -> "O"
+        printInd ind = stateToString $ board !! ind
+    mapPutStr [printInd 0,"|", printInd 1,"|", printInd 2, "\n"]
+    putStrLn "-----"
+    mapPutStr [printInd 3,"|", printInd 4,"|", printInd 5, "\n"]
+    putStrLn "-----"
+    mapPutStr [printInd 6,"|", printInd 7,"|", printInd 8, "\n"]
+
+mapPutStr :: [String] -> IO ()
+mapPutStr [] = return ()
+mapPutStr [x] = putStr x
+mapPutStr (x:xs) = putStr x >> mapPutStr xs
+
+{-
+Question 2
 Write a program for creating a shopping list, where the user can add 3 kinds of
 flowers. When the program is started it should display the following message:
     Possible flowers are: daisy, sunflower and tulip.
@@ -13,13 +97,8 @@ this. When the user says show_list print a message of how many of which flowers 
 added to the list. Use a state monad when coding the solution.
 -}
 
-import Data.Map as Map ( fromList, insert, lookup, Map )
-import Control.Monad.State ( evalState, runState, MonadState(put, get), State )
-import Data.Maybe ( fromJust )
-import Text.Read (readMaybe)
-
-main :: IO ()
-main = do
+main2 :: IO ()
+main2 = do
     putStrLn "Possible flowers are: daisy, sunflower and tulip."
     putStrLn "Possible actions are:\n \
             \ add  --flower --amount \n \
