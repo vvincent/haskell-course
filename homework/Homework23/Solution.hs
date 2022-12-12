@@ -28,41 +28,58 @@ data GameState = GameState
 
 main1 :: IO ()
 main1 = do
-    putStrLn "Game results:"
-    let gen = mkStdGen 1
-        initState = GameState
-                      [Empty | boardInd <- [1..9]]
-                      XPlayer
-                      gen
-    playGame initState
-    
+  let gen = mkStdGen 1
+      initState = GameState
+                  [Empty | boardInd <- [1..9]]
+                  XPlayer
+                  gen
+  playGame initState
+
 playGame :: GameState -> IO ()
 playGame gs = do
-    let freeFields = getFreeFields gs
-    if length freeFields /= 0
-    then do
-        let player = currentPlayer gs
-            board = currentBoard gs
-            gen = generator gs
-            (choiceInd, gen') = randomR (0, length freeFields - 1) gen
-            choice = (freeFields !! choiceInd) + 1
-            newGameState = GameState
-                            (if player == XPlayer
-                            then [if ind /= choice then board !! (ind-1) else X | ind <- [1..9]]
-                            else [if ind /= choice then board !! (ind-1) else O | ind <- [1..9]])
-                            (nextPlayer player)
-                            gen'
-        playGame newGameState
-    else do
-        printBoard gs
+  let (gameFinished, newGS) = runState resolveTurn gs
+  if gameFinished 
+  then do
+    putStrLn "Game results:"
+    printBoard newGS
+  else playGame newGS
 
-getFreeFields :: GameState -> [Int]
-getFreeFields gs = [ind | ind <- [0..8], board !! ind == Empty]
-    where board = currentBoard gs
+resolveTurn :: State GameState Bool
+resolveTurn = do
+  choice <- chooseRandomMove
+  applyMove choice
+  isGameDone
+
+chooseRandomMove :: State GameState Int
+chooseRandomMove = do
+  gs <- get
+  let board = currentBoard gs
+      openSpots = [ind | ind <- [0..8], board !! ind == Empty]
+      gen = generator gs
+  let (i, gen') = randomR (0, length openSpots - 1) gen
+  put $ gs { generator = gen' }
+  return $ (openSpots !! i) + 1
+
+applyMove :: Int -> State GameState ()
+applyMove choice = do
+  gs <- get
+  let player = currentPlayer gs
+      board = currentBoard gs
+      newBoard = if player == XPlayer
+                 then [if ind /= choice then board !! (ind-1) else X | ind <- [1..9]]
+                 else [if ind /= choice then board !! (ind-1) else O | ind <- [1..9]]
+  put $ gs { currentPlayer = nextPlayer player, currentBoard = newBoard }
 
 nextPlayer :: Player -> Player
 nextPlayer XPlayer = OPlayer
 nextPlayer OPlayer = XPlayer
+
+isGameDone :: State GameState Bool
+isGameDone = do
+  gs <- get
+  let board = currentBoard gs
+      openSpots = [ind | ind <- [0..8], board !! ind == Empty]
+  return $ length openSpots == 0
 
 printBoard :: GameState -> IO ()
 printBoard gs = do
@@ -97,6 +114,12 @@ this. When the user says show_list print a message of how many of which flowers 
 added to the list. Use a state monad when coding the solution.
 -}
 
+type Basket = Map.Map String Int
+type Command = String
+type Options = [String]
+type ShoppingData = (Basket, Command, Options)
+type UserMessage = String
+
 main2 :: IO ()
 main2 = do
     putStrLn "Possible flowers are: daisy, sunflower and tulip."
@@ -108,7 +131,7 @@ main2 = do
     let emptyBasket = Map.fromList [("daisy", 0),("sunflower",0),("tulip",0)]
     shop emptyBasket
 
-shop :: Map.Map String Int -> IO ()
+shop :: Basket -> IO ()
 shop basket = do
     putStrLn "What would you like to do:"
     fullCommand <- getLine
@@ -135,7 +158,7 @@ shop basket = do
                 putStrLn "Not a valid command."
                 shop basket
 
-updateOrder :: State (Map.Map String Int, String, [String]) String
+updateOrder :: State ShoppingData UserMessage
 updateOrder = do
     (basket, command, options) <- get
     if command == "show_list"
@@ -169,7 +192,7 @@ updateOrder = do
                             return "Updated basket."
                     _ -> return "This case will anyway never happen"
 
-describeBasket :: Map.Map String Int -> String
+describeBasket :: Basket -> UserMessage
 describeBasket basket = "The shopping list contains " ++ 
                         show daisy ++ " daisies, " ++
                         show sunflower ++ " sunflowers and " ++
