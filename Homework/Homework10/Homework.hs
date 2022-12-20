@@ -1,34 +1,49 @@
+{-
+-- Question 1 --
+Continuing with the logistics software of the lesson:
+ 1. After using the `Container` type class for a while, you realize that it might need a few adjustments:
+  	- First, write down the `Container` type class and its instances, same as we did in the lesson
+  	  (try to do it without looking and check at the end or if you get stuck).
+  	- Then, add a function called `unwrap` that gives you back the value inside a container.
+ 2. Create an instance for the `MailedBox` data type.
+ 	- The MailedBox data type represents a box sent through the mail.
+ 	- The parameter `t` is a tag with a person's identifier
+ 	- The parameter `d` is the person's details (address,etc).
+ 	- The parameter `a` is the content of the MailedBox
+-}
 
--- Question 1
--- Below you have a data type defined that holds a persons information. If you are deriving 
--- the Ord class and use the sort function on the unsortedPersons list the persons are sorted 
--- by their name from smallest to largest first letter. 
--- Implement the Ord type class for the PersonData type such that sort function will sort the 
--- persons regarding to their age from largest to smallest.
-
-import Data.List (sort)
-
-type Name = String
-type Age = Int
-type Height = Int
-
-newtype PersonData = PersonData (Name, Age, Height) deriving (Show, Eq)
-
-unsortedPersons :: [PersonData]
-unsortedPersons = [ PersonData ("Mark", 65, 173)
-                  , PersonData ("Jimmy", 45, 182)
-                  , PersonData ("Brian", 55, 178)]
-
--- sort unsortedPersons -- when deriving the Ord type class for PersonData type
--- [PersonData ("Brian",55,178),PersonData ("Jimmy",45,182),PersonData ("Mark",65,173)]
+data MailedBox t d a = EmptyMailBox t d | MailBoxTo t d a 
 
 
--- Question 2
--- Create the type "Position" that can have the values: Intern, Junior, Senior, Manager, Chief.
--- Then create the type Experience that can have the values: Programming, Managing, Leading.
--- Create a function that takes in two candidates that have a Experience value and years of experience 
--- provided as an integer. And the function should returs the position apropriate for the candidate
--- and also say which candidate has priority for employment (The higher Position gives higher
--- priority and for same positions the years of experience can be compared). Test the function on a
--- set of three candidates that have experience and years: Programming 7, Programming 8, Managing 5.
 
+-- Question 2 --
+-- Create instances for Show, Eq, and Ord for these three data types (use
+-- automatic deriving whenever possible):
+
+
+data Position = Intern | Junior | Senior | Manager | Chief
+
+
+data Experience = Programming | Managing | Leading
+
+
+type Address = String
+
+
+data Salary = USD Double | EUR Double
+
+
+data Relationship
+  = Contractor Position Experience Salary Address
+  | Employee Position Experience Salary Address
+
+
+data Pokemon = Pokemon
+  { pName :: String,
+    pType :: [String],
+    pGeneration :: Int,
+    pPokeDexNum :: Int
+  }
+
+charizard = Pokemon "Charizard" ["Fire", "Flying"] 1 6
+venusaur = Pokemon "Venusaur" ["Grass", "Poison"] 1 3
