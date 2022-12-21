@@ -12,31 +12,23 @@ Continuing with the logistics software of the lesson:
  	- The parameter `a` is the content of the MailedBox
 -}
 
-data MailedBox t d a = EmptyMailBox t d | MailBoxTo t d a 
-
-
+data MailedBox t d a = EmptyMailBox t d | MailBoxTo t d a
 
 -- Question 2 --
 -- Create instances for Show, Eq, and Ord for these three data types (use
 -- automatic deriving whenever possible):
 
-
 data Position = Intern | Junior | Senior | Manager | Chief
-
 
 data Experience = Programming | Managing | Leading
 
-
 type Address = String
 
-
 data Salary = USD Double | EUR Double
-
 
 data Relationship
   = Contractor Position Experience Salary Address
   | Employee Position Experience Salary Address
-
 
 data Pokemon = Pokemon
   { pName :: String,
@@ -46,4 +38,23 @@ data Pokemon = Pokemon
   }
 
 charizard = Pokemon "Charizard" ["Fire", "Flying"] 1 6
+
 venusaur = Pokemon "Venusaur" ["Grass", "Poison"] 1 3
+
+-- Question 3 -- EXTRA CREDITS
+-- Uncomment the next code and make it work (Google what you don't know).
+
+-- -- Team memeber experience in years
+-- newtype Exp = Exp Double
+--
+-- -- Team memeber data
+-- type TeamMember = (String, Exp)
+--
+-- -- List of memeber of the team
+-- team :: [TeamMember]
+-- team = [("John", Exp 5), ("Rick", Exp 2), ("Mary", Exp 6)]
+--
+-- -- Function to check the combined experience of the team
+-- -- This function applied to `team` using GHCi should work
+-- combineExp :: [TeamMember] -> Exp
+-- combineExp = foldr ((+) . snd) 0
