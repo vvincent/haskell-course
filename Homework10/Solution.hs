@@ -149,3 +149,29 @@ instance Ord Pokemon where
 charizard = Pokemon "Charizard" ["Fire", "Flying"] 1 6
 
 venusaur = Pokemon "Venusaur" ["Grass", "Poison"] 1 3
+
+-- Question 3 -- EXTRA CREDITS
+-- Uncomment the next code and make it work (Google what you don't know).
+
+-- Team memeber experience in years
+newtype Exp = Exp Double deriving (Show)
+
+-- Team memeber data
+type TeamMember = (String, Exp)
+
+-- List of memeber of the team
+team :: [TeamMember]
+team = [("John", Exp 5), ("Rick", Exp 2), ("Mary", Exp 6)]
+
+-- Function to check the combined experience of the team
+-- This function applied to `team` using GHCi should work
+combineExp :: [TeamMember] -> Exp
+combineExp = foldr ((+) . snd) 0
+
+instance Num Exp where
+  (+) (Exp x) (Exp y) = Exp (x + y)
+  (*) (Exp x) (Exp y) = Exp (x + y)
+  fromInteger x = Exp (fromInteger x)
+  signum (Exp x) = Exp (signum x)
+  abs (Exp x) = Exp (abs x)
+  negate (Exp x) = Exp (negate x)
