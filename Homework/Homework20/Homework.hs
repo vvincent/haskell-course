@@ -19,17 +19,10 @@ ioExample = do
 
 -- How to compute a combination count for a list: e.g. the list [1,2] has 4 possible combinations which are: 
 -- (1,1) (1,2) (2,1) and (2,2). Do not use your knowledge of mathematics. Do it by computing all combination 
--- pairs and counting them. If the user inputs a negative number return an empty list.
-
--- Additional challange: Try to write your code in a single function and make it as short as possible.
+-- pairs and counting them. Use list comprehension to help yourself. 
 
 
 -- Question 3
--- Write a function that takes in a integer and returns a list of all prime numbers equal or smaller then
--- the given number. If the integer is smaller then 2 return an empty list. Use list comprehension.
-
-
--- Question 4
 -- If you succesfully computed the function from Question 2 you should get for n = 5 the list
 -- [1,4,9,16,25] which clearly represents the function f(x) = x**2. Write now a function that uses the
 -- fittingFunc defined below and finds the best exponent a from the input list of type [Double] that fits 
