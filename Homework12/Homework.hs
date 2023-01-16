@@ -26,9 +26,6 @@ test = print $ fibs 7
 -- I thought the first example that uses cabal should be without adding any 
 -- external packages to the dependency list, so they can first earn the basic 
 -- procedure of setting up a cabal project. 
--- The added value of this example is that he has to figure out that the 
--- scientific package needs to be added as a dependency to both library and
--- executable sections in the cabal file. 
 
 -- Question 3
 -- Create a cabal project where the main file contains a program that asks the 
@@ -41,3 +38,6 @@ test = print $ fibs 7
 -- I could not figure out any other package that is not included in the standard
 -- Haskell instalation and is simple enough for the student to use at this point 
 -- in the course. If you have any idea feel free to change this example. 
+-- I think the added value of this example is that the student has to figure out  
+-- that the scientific package needs to be added as a dependency to both library 
+-- and executable sections in the cabal file. 
