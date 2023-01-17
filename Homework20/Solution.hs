@@ -28,6 +28,21 @@ ioExample' =
       print
 
 -- Question 2
+-- Define the <$> and <*> operatorns with help of monad operators in a do-notation. 
+-- You can call them liftM and ap operators.
+
+liftM :: (Monad m) => (a -> b) -> m a -> m b
+liftM f m1 = do 
+    x1 <- m1
+    return (f x1)
+
+ap :: (Monad m) => m (a -> b) -> m a -> m b
+ap m1 m2 = do 
+    f <- m1
+    x2 <- m2
+    return (f x2) 
+
+-- Question 3
 -- Write a function that takes in n of type Int and returns a list of type [Int]. The elements of the list
 -- are combination counts for lists [1 .. x] where x goes from 1 to n. So the fisrt combination count is for
 -- the list [1], the second for the list [1,2] and the last for the list [1..n]. 
@@ -42,7 +57,7 @@ combinationCount n = do
     if n < 0 then [] 
     else [combForOne i | i <- [1..n]]
 
--- Question 3
+-- Question 4
 -- If you succesfully computed the function from Question 2 you should get for n = 5 the list
 -- [1,4,9,16,25] which clearly represents the function f(x) = x**2. Write now a function that uses the
 -- fittingFunc defined below and finds the best exponent a from the input list of type [Double] that fits 
