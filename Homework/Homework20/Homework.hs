@@ -11,12 +11,8 @@ ioExample = do
       add1 x = x + 1
   print (add1 n)
 
+
 -- Question 2
--- Define the <$> and <*> operatorns with help of monad operators in a do-notation. 
--- You can call them liftM and ap operators.
-
-
--- Question 3
 -- Write a function that takes in n of type Int and returns a list of type [Int]. The elements of the list
 -- are combination counts for lists [1 .. x] where x goes from 1 to n. So the fisrt combination count is for
 -- the list [1], the second for the list [1,2] and the last for the list [1..n]. 
@@ -26,7 +22,7 @@ ioExample = do
 -- pairs and counting them. Use list comprehension to help yourself. 
 
 
--- Question 4
+-- Question 3
 -- If you succesfully computed the function from Question 2 you should get for n = 5 the list
 -- [1,4,9,16,25] which clearly represents the function f(x) = x**2. Write now a function that uses the
 -- fittingFunc defined below and finds the best exponent a from the input list of type [Double] that fits 
