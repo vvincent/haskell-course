@@ -8,7 +8,8 @@ import Data.Maybe (isJust, fromJust)
 Question 1
 Write a program that asks the user for some integer numbers,
 checks if the input is correct and returns a list of factorials
-of these numbers. Use a ReaderT transformer parameterized by a list.
+of these numbers. Use a ReaderT transformer parameterized by a list
+to calculate the list of factorials for the input numbers.  
 
 HINT: Import the Control.Monad.Trans module and use the lift function.
 -}
@@ -40,7 +41,10 @@ main1 = do
 Question 2
 Write a program that asks the user to input 3 integer numbers,
 then checks if the input is correct and returns the sum of them.
-Use a ReaderT transformer parameterized by a Maybe type. 
+
+Use a ReaderT transformer parameterized by a Maybe type to calculate
+the sum of the tree numbers. If the input contains charaters the
+ReaderT transformer should return a Nothing value. 
 
 HINT: You can use also here the lift function from the previous question.
 -}
@@ -56,17 +60,16 @@ possibleSum = do
 
 parseList :: [String] -> [Maybe Int]
 parseList list = map go list 
-  where go i =  if all isDigit i
-                then Just (read i) :: Maybe Int
-                else Nothing
+  where go i | all isDigit i = Just (read i)
+             | otherwise = Nothing
 
-main2 :: IO ()
-main2 = do
+main :: IO ()
+main = do
     putStrLn "Input three integer numbers:"
     inp <- getLine
     let list = words inp
-    if length list == 3
-    then do
+    case length list of
+      3 -> do
         let sum = runReaderT possibleSum list
         if isJust sum
         then do
@@ -74,7 +77,7 @@ main2 = do
             print $ fromJust sum
         else do
             putStrLn "Input only numbers. Try again."
-            main2
-    else do
+            main
+      _ -> do
         putStrLn "Input only 3 numbers:"
-        main2
+        main
