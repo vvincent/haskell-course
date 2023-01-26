@@ -42,7 +42,7 @@ Write a program that asks the user to input 3 integer numbers,
 then checks if the input is correct and returns the sum of them.
 Use a ReaderT transformer parameterized by a Maybe type. 
 
-HINT: You can use also here the lift function from the previous import.
+HINT: You can use also here the lift function from the previous question.
 -}
 
 possibleSum :: ReaderT [String] Maybe Int
