@@ -170,7 +170,7 @@ combineExp = foldr ((+) . snd) 0
 
 instance Num Exp where
   (+) (Exp x) (Exp y) = Exp (x + y)
-  (*) (Exp x) (Exp y) = Exp (x + y)
+  (*) (Exp x) (Exp y) = Exp (x * y)
   fromInteger x = Exp (fromInteger x)
   signum (Exp x) = Exp (signum x)
   abs (Exp x) = Exp (abs x)
