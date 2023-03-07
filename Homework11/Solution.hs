@@ -134,6 +134,8 @@ True if the argument file exists and is not a directory, and False otherwise.
 -}
 
 -- This is a tree-like data structure representing the structure of "."
+-- We use a list of IO actions to show that you can manipulate them as values. In
+-- real-world scenarios, you want to have IO outside your data structures as much as possible.
 data DirectoryStructure = File String | Folder String [IO DirectoryStructure]
 
 -- This action prints the structure neatly using the helper functions below.
