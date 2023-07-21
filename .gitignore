@@ -1,2 +1,5 @@
 lessons/
 images/
+*/dist-newxtyle/
+.venv
+_build
