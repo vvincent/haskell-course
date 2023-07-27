@@ -127,8 +127,6 @@ deliveryCost :: Double
 deliveryCost = 8.50
 
 beerCosts :: [(String, Double)] -> Double
-beerCosts =
-  foldr (+) deliveryCost
-    . zipWith (*) (map snd bevogBeerPrices)
-    . map snd
-    . filter (\name -> fst name `elem` map fst bevogBeerPrices)
+beerCosts = foldl' (+) deliveryCost . zipWith' (\(_, price) (_, qty)  -> price * qty) bevogBeerPrices
+
+
