@@ -133,60 +133,38 @@ HINT: You can use the function doesFileExist, which takes in a FilePath and retu
 True if the argument file exists and is not a directory, and False otherwise.
 -}
 
--- This is a tree-like data structure representing the structure of "."
--- We use a list of IO actions to show that you can manipulate them as values. In
--- real-world scenarios, you want to have IO outside your data structures as much as possible.
-data DirectoryStructure = File String | Folder String [IO DirectoryStructure]
+-- *Thank you to Santiago Payà Miralta for his simplified version.*
 
--- This action prints the structure neatly using the helper functions below.
 printDirectoryTree :: IO ()
 printDirectoryTree = do
-  putStrLn "."
-  structure <- returnStructure "."
-  printStructure structure 0
+  let root = "."
+  putStrLn root >> listDirectory (generatePath [root]) >>= printFiles [root]
 
--- Here, we give structure to our string by parsing it into our data type.
-returnStructure :: FilePath -> IO [IO DirectoryStructure]
-returnStructure filePath = do
-  contents <- listDirectory filePath
-  return $ map go contents
- where
-  go fileName = do
-    let newFilePath = filePath ++ "/" ++ fileName
-    isFile <- doesFileExist newFilePath
-    if isFile
-      then return $ File fileName
-      else do
-        structure <- returnStructure newFilePath
-        return $ Folder fileName structure
-
--- It prins the whole structure to the standard ouptut
-printStructure :: [IO DirectoryStructure] -> Int -> IO ()
-printStructure [] _ = return ()
-printStructure (x : xs) level = do
-  structure <- x
-  case structure of
-    File name -> do
-      printSpaces level
-      printElement xs name
-    Folder name ioList -> do
-      printSpaces level
-      printElement xs name
-      printStructure ioList (level + 1)
-  printStructure xs level
-
--- It prins a single element to the standard ouptut
-printElement :: [IO DirectoryStructure] -> String -> IO ()
-printElement xs name =
-  if null xs
-    then putStrLn $ "└── " ++ name
-    else putStrLn $ "├── " ++ name
-
--- It prins spaces to the standard ouptut
-printSpaces :: Int -> IO ()
-printSpaces n =
-  if n < 1
-    then return ()
+-- print all files in a directory
+printFiles :: [String] -> [String] -> IO ()
+printFiles _ [] = putStr "" -- Print end of list
+printFiles path (f : fs) = do
+  let currentElemPath = generatePath path ++ "/" ++ f -- generate path to current element
+  let isLast = null fs -- is last element?
+  let depth = length path -- use the number of elements in the list to determine the depth
+  isFile <- doesFileExist currentElemPath
+  if isFile
+    then printLine isLast depth f -- If file, print file's line and that's it
     else do
-      putStr "    "
-      printSpaces (n - 1)
+      printLine isLast depth f -- Print directory's line
+      let newPath = path ++ [f] -- Add directory to original path to create new path one level deeper
+      listDirectory (generatePath newPath) >>= printFiles newPath . sort -- Recursively print new path
+  printFiles path fs -- Keep going with the next file on the same level
+
+-- Get path from list of strings ["dir1", "dir2", "file.txt"] -> "dir1/dir2/file.txt"
+generatePath :: [String] -> String
+generatePath []       = "" -- If empty path, return an empty string
+generatePath (e : es) = e ++ "/" ++ generatePath es -- If not empty, recursively concatenate elements
+
+-- Print a single line of the tree
+printLine :: Bool -> Int -> String -> IO ()
+printLine isLast depth f = do
+  putStr $ replicate ((depth - 1) * 4) ' ' -- Indent according to directory depth
+  if isLast
+    then putStrLn ("└── " ++ f)
+    else putStrLn ("├── " ++ f)
