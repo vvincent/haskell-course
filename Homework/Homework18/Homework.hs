@@ -1,37 +1,134 @@
+{-# LANGUAGE InstanceSigs #-}
+
+import           Data.Functor
+import           Data.Semigroup (Sum (..))
+
+----------------------------------------------------------------------------------------------------
+---------------------------------------- QUESTION 1 ------------------------------------------------
+{-
+Question 1: Implement the Functor instance for a RoseTree type.
+A RoseTree is a tree where each node can have any number of children.
+It's a bit more complicated than the binary tree we saw in the lecture,
+but here's the trick to solve it: Follow the types!
+-}
+
+data RoseTree a = RoseNode a [RoseTree a] deriving (Eq, Show)
+
+exampleRoseTree :: RoseTree Int
+exampleRoseTree = RoseNode 1 [RoseNode 2 [], RoseNode 3 [RoseNode 4 []]]
+
+instance Functor RoseTree where
+  fmap :: (a -> b) -> RoseTree a -> RoseTree b
+  fmap f (RoseNode a []) = RoseNode (f a) []
+  fmap f (RoseNode a xs) = RoseNode (f a) (map (fmap f) xs)
+
+-- Test it out:
+
+--- >>> fmap (+1) exampleRoseTree
+-- RoseNode 2 [RoseNode 3 [],RoseNode 4 [RoseNode 5 []]]
+
+--- >>> (*2) <$> exampleRoseTree
+-- RoseNode 2 [RoseNode 4 [],RoseNode 6 [RoseNode 8 []]]
+
+--- >>> exampleRoseTree $> "Yes!"
+-- RoseNode "Yes!" [RoseNode "Yes!" [],RoseNode "Yes!" [RoseNode "Yes!" []]]
+
+--- >>> (id <$> exampleRoseTree) == id exampleRoseTree
+-- True
+
+----------------------------------------------------------------------------------------------------
+---------------------------------- QUESTION 2 - Introduction ---------------------------------------
+{-
+You're writing an app that queries the database for a list of items (products) and then performs
+several transformation on these items, such as calculating the taxes, adding them to get the
+total value, etc. The database query that returns the list of items might fail, so the result of
+the query is wrapped in a Maybe.
+-}
+
+-- Type representing an item (product)
+newtype Item a = Item {getItem :: (String, Sum a)} deriving (Eq, Show)
+
+exampleItem :: Item Double
+exampleItem = Item ("Phone", Sum 50.0)
+
+-- Type of the result of the database query
+type DBResponse = Maybe [Item Double]
+
+-- Example of a database query result
+dbResult :: DBResponse
+dbResult = Just [Item ("Phone", Sum 50.0), Item ("Glasses", Sum 30.0)]
+
+----------------------------------------------------------------------------------------------------
+---------------------------------------- QUESTION 2 A ----------------------------------------------
+{-
+Write the Functor instance for Item.
+-}
+
+instance Functor Item where
+  fmap :: (a -> b) -> Item a -> Item b
+  fmap f = Item . (fmap . fmap) f . getItem
 
 
--- Question 1
--- Write a function that takes in an aritmetic operator that has an instance of Fractional as +, -, 
--- * or /. It also takes in a list of type [Double]. Then it calulates the number of all possible 
--- computations where you can take any of two elements from the list and uses the provided operator 
--- on them. For which of the stated operators above is the number the smallest for the list [1..5]? 
+-- >>> fmap (*2) exampleItem
+-- Item {getItem = ("Phone",Sum {getSum = 100.0})}
 
+-- >>> fmap id exampleItem == id exampleItem
+-- True
 
--- Question 2
--- For the Cube type and data defined below create a Show instance that prints possible combinations
--- of the numbers and their probabilites. Create a Num Semigroup instance that combines e.g. the strings
--- "1" and "2" to the string "1-2". Create a Semigroup and Monoid instance for Cube that combines all
--- posible cube results for 2 cubes and their probabilities into a new Cube object. Then evalueate:
--- cube1 <> cube2 and mconcat [cube1, cube1, cube1]. The result for cube1 <> cube2 should be:
+----------------------------------------------------------------------------------------------------
+---------------------------------------- QUESTION 2 B ----------------------------------------------
+{-
+Write a function that gives you all the items of the list for free (price = 0.0).
+-}
 
--- Case: 1-1, Probability: 6.0e-2
--- Case: 1-2, Probability: 9.0e-2
--- Case: 1-3, Probability: 0.15
--- Case: 2-1, Probability: 0.14
--- Case: 2-2, Probability: 0.21
--- Case: 2-3, Probability: 0.35
+giveForFree :: DBResponse -> DBResponse
+giveForFree = fmap . map $ ($> 0.0)
 
--- Defined data
-newtype Nums = Num String
-type Numbers = [Nums]
-type Probabilities = [Double]
+-- >>> giveForFree dbResult
+-- Just [Item {getItem = ("Phone",Sum {getSum = 0.0})},Item {getItem = ("Glasses",Sum {getSum = 0.0})}]
 
-data Cube = Cube Numbers Probabilities
+----------------------------------------------------------------------------------------------------
+---------------------------------------- QUESTION 2 C ----------------------------------------------
+{-
+Write a function that changes the products prices by applying a tax of 20%.
+-}
 
-cube1 :: Cube
-cube1 = Cube [Num "1", Num "2"] [0.3, 0.7]
+applyTaxes :: DBResponse -> DBResponse
+applyTaxes = fmap . map . fmap $ (*1.2)
 
-cube2 :: Cube
-cube2 = Cube [Num "1", Num "2", Num "3"] [0.2, 0.3, 0.5]
----------------
+-- >>> applyTaxes dbResult
+-- Just [Item {getItem = ("Phone",Sum {getSum = 60.0})},Item {getItem = ("Glasses",Sum {getSum = 36.0})}]
 
+----------------------------------------------------------------------------------------------------
+---------------------------------------- QUESTION 2 D ----------------------------------------------
+{-
+Write a function that marks the products as discounted (in the name) and applies the discount (that
+goes from 0.0 to 1.0) to the price.
+-}
+
+markOnSale :: Double -> DBResponse -> DBResponse
+markOnSale perc = fmap . map $ markItemOnSale
+  where
+    markItemOnSale (Item (n,p)) = Item (changeName n, (*(1-perc)) <$> p)
+    changeName n = n <> " (" <> show (perc*100) <> "% Discount)"
+
+-- >>> markOnSale 0.3 dbResult
+-- Just [Item {getItem = ("Phone (30.0% Discount)",Sum {getSum = 35.0})},Item {getItem = ("Glasses (30.0% Discount)",Sum {getSum = 21.0})}]
+
+----------------------------------------------------------------------------------------------------
+---------------------------------------- QUESTION 2 E ----------------------------------------------
+{-
+Write a function that returns a pair with the list of items as first argument and the total price
+as second argument.
+-}
+
+listItemsWithFinalPrice :: DBResponse -> Maybe ([String], Double)
+listItemsWithFinalPrice = (sumProducts . unzip . map getItem <$>)
+  where
+    sumProducts = (getSum . mconcat <$>)
+
+-- >>> listItemsWithFinalPrice dbResult
+-- Just (["Phone","Glasses"],80.0)
+
+-- >>> listItemsWithFinalPrice . applyTaxes . markOnSale 0.3 $ dbResult
+-- Just (["Phone (30.0% Discount)","Glasses (30.0% Discount)"],67.2)
