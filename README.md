@@ -288,7 +288,7 @@ In this section, we learn about a few of the most useful and talked about Abstra
 
 ---
 
-### 17. Semigroup and Monoid
+### 17. Semigroup and Monoid [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/input-output-hk/haskell-course/HEAD?labpath=%2Flessons%2F17-Semigroup-and-Monoid.ipynb) [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=flat&logo=YouTube&logoColor=white)](https://www.youtube.com/watch?v=-O1ZApHPvkg&list=PLNEK_Ejlx3x1D9Vq5kqeC3ZDEP7in4dqb&index=18)
 
 - What does it mean to abstract a pattern?
 - Why abstracting patterns (in general)?
