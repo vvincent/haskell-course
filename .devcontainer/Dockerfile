@@ -1,5 +1,6 @@
 FROM ghcr.io/jamesdbrock/ihaskell-notebook:master
 # FROM ghcr.io/ihaskell/ihaskell-notebook:master
+#FROM gibiansky/ihaskell
 
 # Slides
 RUN pip install RISE
