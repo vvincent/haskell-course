@@ -58,5 +58,11 @@ func a b =
  let sqrtProduct = sqrt product where product = let v1 = a; v2 = b; in v1 * v2
      sqrtQuotient = sqrt quotient where quotient = let v1 = a; v2 = b; in v1 / v2
  in sqrtProduct + sqrtQuotient
+
+-- best solution
+invertedConstructions :: Double -> Double -> Double
+invertedConstructions a b = let sqrtProd = sqrt abProd where abProd = a * b
+                            in sqrtProd + sqrtQuot
+                            where sqrtQuot = let abQuot = a / b in sqrt abQuot
  
 
