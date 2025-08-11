@@ -1,10 +1,13 @@
+import Data.List (foldl')
+
 -- Question 1
 -- Write a function called `repeat'` that takes a value and creates an infinite list with
 -- the value provided as every element of the list.
 --
 -- >>> repeat 17
 --[17,17,17,17,17,17,17,17,17...
-
+repeat' :: a -> [a]
+repeat' x = x : repeat' x
 
 -- Question 2
 -- Using the `repeat'` function and the `take` function we defined in the lesson (comes with Haskell),
@@ -17,6 +20,9 @@
 -- []
 -- >>> replicate 4 True
 -- [True,True,True,True]
+replicate' :: Int -> a -> [a]
+replicate' n _ | n <= 0 = []
+replicate' n x = take n . repeat' $ x
 
 
 -- Question 3
@@ -24,7 +30,17 @@
 --
 -- >>> concat' [[1,2],[3],[4,5,6]]
 -- [1,2,3,4,5,6]
+concat' :: [[a]] -> [a]
+concat' [[]] = []
+concat' ([]:xs) = concat' xs
+concat' ((x:xs):xy) = x : (concat' (xs : xy))
 
+-- using foldr
+concat''' :: [[a]] -> [a]
+concat''' = foldr (++) []
+-- Test example
+testConcat :: [Int]
+testConcat = concat''' [[1,2],[3],[4,5,6]]
 
 -- Question 4
 -- Write a function called `zip'` that takes two lists and returns a list of
@@ -44,6 +60,10 @@
 -- []
 -- >>> zip' [1..] []
 -- []
+zip' :: [a] -> [b] -> [(a,b)]
+zip' [] _ = []
+zip' _ [] = []
+zip' (x:xs) (y:ys) = (x,y) : zip' xs ys
 
 
 
@@ -59,6 +79,11 @@
 --
 -- >>> zipWith (+) [1, 2, 3] [4, 5, 6]
 -- [5,7,9]
+zipWith' :: (a -> a -> b) -> [a] -> [a] -> [b]
+zipWith' _ [] _         = []
+zipWith' _ _ []         = []
+zipWith' f (x:xs) (y:ys) = f x y : (zipWith' f xs ys)
+
 
 
 -- Question 6
@@ -71,12 +96,52 @@
 -- [1,2,3]
 -- >>> takeWhile (< 0) [1,2,3]
 -- []
-
+takeWhile' :: (a -> Bool) -> [a] -> [a]
+takeWhile' f [] = []
+takeWhile' f (x:xs) 
+ | f x       = x : (takeWhile' f xs)
+ | otherwise = takeWhile' f xs
 
 -- Question 7 (More difficult)
 -- Write a function that takes in an integer n, calculates the factorial n! and
 -- returns a string in the form of 1*2* ... *n = n! where n! is the actual result.
+factorial :: Int -> String
+factorial n
+  | n < 0     = "Factorial is not defined for negative numbers."
+  | n == 0    = "1 = 1"
+  | otherwise = let result = product [1..n]
+                    terms = map show [1..n]
+                    terms' = map (\x -> x ++ "*") terms
+                in concat terms' ++ " = " ++ show result
 
+-- better solution
+factorial' :: Int -> String
+factorial' n = accumulate 2 "1" ++ " = " ++ show result
+  where
+    accumulate x string
+      | x > n = string
+      | otherwise = accumulate (x + 1) (string ++ "*" ++ show x)
+    result = product [1 .. n]
+
+{- factorial' :: Int -> String
+factorial' n
+  | n < 0     = "Factorial is not defined for negative numbers."
+  | n == 0    = "1 = 1"
+  | otherwise = let result = product [1..n]
+                    terms = map show [1..n]
+                    termsWithStars = init terms ++ [last terms]
+                    equation = concat (map (++ "*") (init terms)) ++ last terms
+                in equation ++ " = " ++ show result
+
+factorial'' :: Int -> String
+factorial'' n
+  | n < 0     = "Factorial is not defined for negative numbers."
+  | n == 0    = "1 = 1"
+  | otherwise = let result = product [1..n]
+                    terms = map show [1..n]
+                    equation = intercalate "*" terms
+                in equation ++ " = " ++ show result                 
+-}
 
 -- Question 8
 -- Below you have defined some beer prices in bevogBeerPrices and your order list in
@@ -100,3 +165,19 @@ orderList =
 
 deliveryCost :: Double
 deliveryCost = 8.50
+
+cost :: [(String,Double)] -> [(String,Double)] -> Double -> Double
+cost xs [] d = deliveryCost
+cost [] ys d = deliveryCost
+cost (x:xs) (y:ys) d = (snd x * snd y) + cost xs ys d
+ 
+totalCost :: Double
+totalCost = cost bevogBeerPrices orderList deliveryCost  
+
+-- better solution
+beerCosts :: [(String, Double)] -> Double
+beerCosts = foldl' (+) deliveryCost . zipWith' (\(_, price) (_, qty)  -> price * qty) bevogBeerPrices
+
+totalCost' :: Double
+totalCost' = beerCosts orderList
+
